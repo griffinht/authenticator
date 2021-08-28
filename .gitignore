@@ -1,0 +1,17 @@
+build
+bin
+
+# Node
+node_modules
+package-lock.json
+# IntelliJ Idea
+.idea
+
+# Gradle
+.gradle
+
+# Gradle binaries
+# just install gradle lol
+gradle
+gradlew
+gradlew.bat
