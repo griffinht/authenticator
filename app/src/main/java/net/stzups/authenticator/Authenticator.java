@@ -3,20 +3,20 @@ package net.stzups.authenticator;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpContentCompressor;
-import io.netty.handler.codec.http.HttpResponse;
+import io.netty.handler.codec.http.*;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import net.stzups.netty.Server;
+import net.stzups.netty.TestLog;
 import net.stzups.netty.http.DefaultHttpServerHandler;
 import net.stzups.netty.http.HttpServerInitializer;
+import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.NotFoundException;
 import net.stzups.netty.http.handler.HttpHandler;
 
 public class Authenticator {
     public static void main(String[] args) throws Exception {
-        try (Server server = new Server(443)) {
+        try (Server server = new Server(8080)) {
             Runtime.getRuntime().addShutdownHook(new Thread(server::close));
 
             ChannelFuture closeFuture = server.start(new HttpServerInitializer(new HttpServerInitializer.Config() {
@@ -42,6 +42,7 @@ public class Authenticator {
             }) {
                 @Override
                 protected void initChannel(SocketChannel channel) {
+                    TestLog.setLogger(channel);
                     super.initChannel(channel);
 
                     channel.pipeline()
@@ -52,15 +53,16 @@ public class Authenticator {
                                         @Override
                                         public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponse response) throws HttpException {
                                             System.out.println(request.headers());
-                                            throw new NotFoundException("not found");
+                                            HttpUtils.send(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.UNAUTHORIZED));
+                                            return true;
                                         }
                                     }));
                 }
             });
 
-            System.out.println("Started server");
+            System.err.println("Started server");
             closeFuture.sync();
-            System.out.println("Server closed");
+            System.err.println("Server closed");
         }
     }
 }
