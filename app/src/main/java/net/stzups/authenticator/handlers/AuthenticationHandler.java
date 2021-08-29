@@ -1,20 +1,19 @@
 package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpResponse;
-import io.netty.handler.codec.http.HttpResponseStatus;
-import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
-import net.stzups.netty.http.HttpUtils;
+import io.netty.handler.codec.http.*;
+import net.stzups.authenticator.Session;
+import net.stzups.authenticator.SessionCookie;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthenticationHandler extends HttpHandler {
+    private Map<Long, Session> sessions = new HashMap<>();
+
     public AuthenticationHandler() {
         super("/authenticate");
     }
@@ -23,26 +22,26 @@ public class AuthenticationHandler extends HttpHandler {
     public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponse response) throws HttpException {
         //todo verify that this is actually coming from the proxy
         //System.out.println(request.headers());
-        String cookiesHeader = request.headers().get(HttpHeaderNames.COOKIE);
-        if (cookiesHeader == null) {
-            throw new UnauthorizedException("Missing cookies");
-
+        SessionCookie sessionCookie = SessionCookie.getSessionCookie(request);
+        if (sessionCookie == null) {
+            throw new UnauthorizedException("Missing session cookie");
         }
 
-        Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookiesHeader);
-        for (Cookie cookie : cookies) {
-            if (!cookie.name().equals(Authenticate.COOKIE_NAME)) {
-                continue;
-            }
-
-            if (!cookie.value().equals("secret_password")) {
-                throw new UnauthorizedException("wrong secret password");
-            }
-
-            response.setStatus(HttpResponseStatus.OK);
-            HttpUtils.send(ctx, request, response);
-            return true;
+        Session session = sessions.get(sessionCookie.id);
+        byte[] hash;
+        if (session == null) {
+            System.err.println("bad id");
+            hash = null;
+        } else {
+            System.err.println("good id");
+            hash = session.hash;
         }
-        throw new UnauthorizedException("Missing " + Authenticate.COOKIE_NAME + " cookie");
+
+        if (!sessionCookie.verify(hash)) {
+            throw new UnauthorizedException("Bad session");
+        }
+
+        FullHttpResponse r = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        return true;
     }
 }
