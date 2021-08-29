@@ -13,6 +13,11 @@ public class Login {
     }
 
     public static boolean verify(Login login, byte[] password) {
-        return Arrays.equals(PasswordUtil.hash(password, login != null ? login.salt : null), login != null ? login.hash : null);
+        return Arrays.equals(
+                        PasswordUtil.hash(
+                                password,
+                                login != null ? login.salt : null
+                        ), login != null ? login.hash : null
+                );
     }
 }

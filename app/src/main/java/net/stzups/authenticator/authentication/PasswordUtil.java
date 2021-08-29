@@ -39,11 +39,10 @@ public class PasswordUtil {
 
         byte[] hash = new byte[hashLength];
         generator.generateBytes(password, hash);
-        if (_password == null || _salt == null) {
-            return null;
+        if (_password != null) {
+            // might as well clear password because it should not be reused
+            Arrays.fill(_password, (byte) 0);
         }
-        // might as well clear password because it should not be reused
-        Arrays.fill(password, (byte) 0);
         return hash;
     }
 }
