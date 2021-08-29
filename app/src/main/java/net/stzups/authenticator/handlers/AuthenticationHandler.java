@@ -15,8 +15,6 @@ import net.stzups.netty.http.handler.HttpHandler;
 import java.util.Set;
 
 public class AuthenticationHandler extends HttpHandler {
-    static final String COOKIE_NAME = "session";
-
     public AuthenticationHandler() {
         super("/authenticate");
     }
@@ -33,7 +31,7 @@ public class AuthenticationHandler extends HttpHandler {
 
         Set<Cookie> cookies = ServerCookieDecoder.STRICT.decode(cookiesHeader);
         for (Cookie cookie : cookies) {
-            if (!cookie.name().equals(COOKIE_NAME)) {
+            if (!cookie.name().equals(Authenticate.COOKIE_NAME)) {
                 continue;
             }
 
@@ -45,6 +43,6 @@ public class AuthenticationHandler extends HttpHandler {
             HttpUtils.send(ctx, request, response);
             return true;
         }
-        throw new UnauthorizedException("Missing " + COOKIE_NAME + " cookie");
+        throw new UnauthorizedException("Missing " + Authenticate.COOKIE_NAME + " cookie");
     }
 }
