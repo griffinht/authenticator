@@ -1,4 +1,4 @@
-package net.stzups.authenticator;
+package net.stzups.authenticator.authentication;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

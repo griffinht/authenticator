@@ -1,10 +1,11 @@
-package net.stzups.authenticator;
+package net.stzups.authenticator.authentication;
 
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
+
 import java.security.SecureRandom;
 
-import static net.stzups.authenticator.SessionCookie.COOKIE_NAME;
+import static net.stzups.authenticator.authentication.SessionCookie.COOKIE_NAME;
 
 public class Session {
     static final int tokenLength = 4 * 8;
@@ -19,7 +20,7 @@ public class Session {
         secureRandom.nextBytes(token);
         DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, Base64.encode(token));
 
-        hash = Password.hash(token);
+        hash = PasswordUtil.hash(token);
 
         return cookie;
     }

@@ -1,4 +1,4 @@
-package net.stzups.authenticator;
+package net.stzups.authenticator.authentication;
 
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
@@ -6,7 +6,7 @@ import org.bouncycastle.crypto.params.Argon2Parameters;
 import java.security.SecureRandom;
 import java.util.Arrays;
 
-public class Password {
+public class PasswordUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     private static final int saltLength = 128 / 8;

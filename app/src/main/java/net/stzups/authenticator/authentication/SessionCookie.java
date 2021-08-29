@@ -1,4 +1,4 @@
-package net.stzups.authenticator;
+package net.stzups.authenticator.authentication;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.HttpHeaderNames;
@@ -24,11 +24,10 @@ public class SessionCookie {
     }
 
     public boolean verify(byte[] hash) {
-        if (hash == null) {
-            hash = DUMMY;
-        }
+        byte[] bytes;
+        if (hash != null) bytes = hash; else bytes = DUMMY;
         // always return false if dummy password
-        return Arrays.equals(Password.hash(token), hash) && hash != DUMMY;
+        return Arrays.equals(PasswordUtil.hash(token), hash) && hash != DUMMY;
     }
 
     public static SessionCookie getSessionCookie(HttpRequest request) {
