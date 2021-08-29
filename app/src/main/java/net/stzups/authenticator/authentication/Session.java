@@ -8,7 +8,7 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class Session {
-    static final int tokenLength = 4 * 8;
+    static final int tokenLength = 128 / 8;
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
@@ -16,7 +16,7 @@ public class Session {
     public byte[] hash;
 
     public Cookie generate() {
-        byte[] token = new byte[32];
+        byte[] token = new byte[tokenLength];
         secureRandom.nextBytes(token);
         Cookie cookie = SessionCookie.createSessionCookie(id, token);
         hash = hash(token);
