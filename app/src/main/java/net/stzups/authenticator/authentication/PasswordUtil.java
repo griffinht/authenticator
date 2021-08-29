@@ -10,7 +10,7 @@ public class PasswordUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     private static final int saltLength = 128 / 8;
-    static final int hashLength = 256 / 8;
+    private static final int hashLength = 256 / 8;
     private static final int parallelism = 1;
     private static final int memory = 10 * 1024;
     private static final int iterations = 10;
