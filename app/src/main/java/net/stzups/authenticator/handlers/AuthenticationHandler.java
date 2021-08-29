@@ -27,17 +27,17 @@ public class AuthenticationHandler extends HttpHandler {
         try {
              sessionCookie = SessionCookie.getSessionCookie(request);
         } catch (DeserializationException e) {
-            throw new UnauthorizedException("malformed", e);
+            throw new UnauthorizedException("Exception while deserializing session cookie", e);
         }
         if (sessionCookie == null) {
             throw new UnauthorizedException("Missing session cookie");
         }
 
         if (!Session.verify(database.getSession(sessionCookie.id), sessionCookie.token)) {
-            throw new UnauthorizedException("bad session");
+            throw new UnauthorizedException("Bad session");
         }
 
-        System.err.println("good session");
+        System.err.println("Good session");
 
         HttpUtils.send(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
         return true;

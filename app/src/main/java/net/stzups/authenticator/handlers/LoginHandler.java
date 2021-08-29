@@ -45,10 +45,10 @@ public class LoginHandler extends HttpHandler {
 
         LoginRequest loginRequest = new LoginRequest(request);
         if (!Login.verify(database.getLogin(loginRequest.username), loginRequest.password)) {
-            throw new UnauthorizedException("bad username/password");
+            throw new UnauthorizedException("Bad login");
         }
 
-        System.err.println("good login");
+        System.err.println("Good login");
 
         if (loginRequest.remember) {
             System.err.println("todo remember");
