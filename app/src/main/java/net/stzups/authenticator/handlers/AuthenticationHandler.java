@@ -1,7 +1,10 @@
 package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.DefaultFullHttpResponse;
+import io.netty.handler.codec.http.FullHttpRequest;
+import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.HttpVersion;
 import net.stzups.authenticator.DeserializationException;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
@@ -20,7 +23,7 @@ public class AuthenticationHandler extends HttpHandler {
     }
 
     @Override
-    public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponse response) throws HttpException {
+    public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) throws HttpException {
         //todo verify that this is actually coming from the proxy
         //System.out.println(request.headers());
         SessionCookie sessionCookie;

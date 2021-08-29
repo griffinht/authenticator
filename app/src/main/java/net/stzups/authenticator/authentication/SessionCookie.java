@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import net.stzups.authenticator.DeserializationException;
 
 import java.util.Set;
@@ -54,5 +55,21 @@ public class SessionCookie {
         }
 
         return null;
+    }
+
+    public static SessionCookie removeSessionCookie(HttpRequest request) {
+        SessionCookie sessionCookie;
+        try {
+            sessionCookie = getSessionCookie(request);
+        } catch (DeserializationException e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, "");
+        cookie.setMaxAge(0);
+        request.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+
+        return sessionCookie;
     }
 }

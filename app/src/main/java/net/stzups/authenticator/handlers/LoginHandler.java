@@ -38,7 +38,7 @@ public class LoginHandler extends HttpHandler {
     }
 
     @Override
-    public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponse r) throws HttpException {
+    public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) throws HttpException {
         if (!request.method().equals(HttpMethod.POST)) {
             throw new MethodNotAllowedException(request.method(), HttpMethod.POST);
         }
