@@ -4,6 +4,7 @@ import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 public class PasswordUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -29,6 +30,8 @@ public class PasswordUtil {
 
         byte[] hash = new byte[hashLength];
         generator.generateBytes(password, hash);
+        // might as well clear password because it should not be reused
+        Arrays.fill(password, (byte) 0);
         return hash;
     }
 }

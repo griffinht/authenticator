@@ -30,7 +30,7 @@ public class LoginHandler extends HttpHandler {
         }
     }
 
-    private Database database;
+    private final Database database;
 
     public LoginHandler(Database database) {
         super("/login");

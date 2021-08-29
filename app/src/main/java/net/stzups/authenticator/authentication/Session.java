@@ -1,11 +1,11 @@
 package net.stzups.authenticator.authentication;
 
 import io.netty.handler.codec.http.cookie.Cookie;
-import io.netty.handler.codec.http.cookie.DefaultCookie;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-
-import static net.stzups.authenticator.authentication.SessionCookie.COOKIE_NAME;
+import java.util.Arrays;
 
 public class Session {
     static final int tokenLength = 4 * 8;
@@ -18,12 +18,29 @@ public class Session {
     public Cookie generate() {
         byte[] token = new byte[32];
         secureRandom.nextBytes(token);
-        DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, Base64.encode(token));
-
-        hash = PasswordUtil.hash(token);
+        Cookie cookie = SessionCookie.createSessionCookie(id, token);
+        hash = hash(token);
 
         return cookie;
     }
 
+    public static boolean verify(Session session, byte[] token) {
+        byte[] hash;
+        if (session != null) hash = session.hash; else hash = null;
 
+        return Arrays.equals(hash(token), hash);
+    }
+
+    private static byte[] hash(byte[] token) {
+        MessageDigest messageDigest;
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Exception while getting algorithm SHA-256", e);
+        }
+        byte[] hash = messageDigest.digest(token);
+        // might as well clear token because it should not be reused
+        Arrays.fill(token, (byte) 0);
+        return hash;
+    }
 }

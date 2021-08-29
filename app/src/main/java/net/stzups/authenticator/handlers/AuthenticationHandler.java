@@ -2,15 +2,17 @@ package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import net.stzups.authenticator.DeserializationException;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.authentication.SessionCookie;
+import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 
 public class AuthenticationHandler extends HttpHandler {
-    private Database database;
+    private final Database database;
 
     public AuthenticationHandler(Database database) {
         super("/authenticate");
@@ -21,26 +23,23 @@ public class AuthenticationHandler extends HttpHandler {
     public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request, HttpResponse response) throws HttpException {
         //todo verify that this is actually coming from the proxy
         //System.out.println(request.headers());
-        SessionCookie sessionCookie = SessionCookie.getSessionCookie(request);
+        SessionCookie sessionCookie;
+        try {
+             sessionCookie = SessionCookie.getSessionCookie(request);
+        } catch (DeserializationException e) {
+            throw new UnauthorizedException("malformed", e);
+        }
         if (sessionCookie == null) {
             throw new UnauthorizedException("Missing session cookie");
         }
 
-        Session session = database.getSession(sessionCookie.id);
-        byte[] hash;
-        if (session == null) {
-            System.err.println("bad id");
-            hash = null;
-        } else {
-            System.err.println("good id");
-            hash = session.hash;
+        if (!Session.verify(database.getSession(sessionCookie.id), sessionCookie.token)) {
+            throw new UnauthorizedException("bad session");
         }
 
-        if (!sessionCookie.verify(hash)) {
-            throw new UnauthorizedException("Bad session");
-        }
+        System.err.println("good session");
 
-        FullHttpResponse r = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        HttpUtils.send(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
         return true;
     }
 }

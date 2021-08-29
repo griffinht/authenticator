@@ -1,36 +1,44 @@
 package net.stzups.authenticator.authentication;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
+import net.stzups.authenticator.DeserializationException;
 
-import java.util.Arrays;
 import java.util.Set;
 
 public class SessionCookie {
     public static final String COOKIE_NAME = "session";
-    private static final byte[] DUMMY = new byte[Session.tokenLength];
 
     public final long id;
-    private final byte[] token = new byte[Session.tokenLength];
+    public final byte[] token = new byte[Session.tokenLength];
 
-    public SessionCookie(Cookie cookie) {
+    public SessionCookie(Cookie cookie) throws DeserializationException {
         ByteBuf byteBuf = Base64.decode(cookie.value());
-        id = byteBuf.readLong();
-        byteBuf.readBytes(token);
+        try {
+            id = byteBuf.readLong();
+            byteBuf.readBytes(token);
+        } catch (IndexOutOfBoundsException e) {
+            throw new DeserializationException(e);
+        } finally {
+            byteBuf.release();
+        }
+    }
+
+    public static Cookie createSessionCookie(long id, byte[] token) {
+        ByteBuf byteBuf = Unpooled.buffer();
+        byteBuf.writeLong(id);
+        byteBuf.writeBytes(token);
+        DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, Base64.encode(byteBuf));
         byteBuf.release();
+        return cookie;
     }
 
-    public boolean verify(byte[] hash) {
-        byte[] bytes;
-        if (hash != null) bytes = hash; else bytes = DUMMY;
-        // always return false if dummy password
-        return Arrays.equals(PasswordUtil.hash(token), hash) && hash != DUMMY;
-    }
-
-    public static SessionCookie getSessionCookie(HttpRequest request) {
+    public static SessionCookie getSessionCookie(HttpRequest request) throws DeserializationException {
         String cookiesHeader = request.headers().get(HttpHeaderNames.COOKIE);
         if (cookiesHeader == null) {
             return null;
