@@ -3,18 +3,16 @@ package net.stzups.authenticator.authentication;
 import java.util.Arrays;
 
 public class Login {
-    private static final byte[] DUMMY = new byte[PasswordUtil.hashLength];
-
     private final byte[] hash;
+    private final byte[] salt;
 
     public Login(byte[] password) {
-        this.hash = PasswordUtil.hash(password);
+        byte[][] bytes = PasswordUtil.hash(password);
+        hash = bytes[0];
+        salt = bytes[1];
     }
 
     public static boolean verify(Login login, byte[] password) {
-        byte[] hash;
-        if (login != null) hash = login.hash; else hash = DUMMY;
-        // always return false if hash is dummy
-        return Arrays.equals(PasswordUtil.hash(password), hash) && hash != DUMMY;
+        return Arrays.equals(PasswordUtil.hash(password, login != null ? login.salt : null), login != null ? login.hash : null);
     }
 }

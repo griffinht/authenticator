@@ -15,9 +15,18 @@ public class PasswordUtil {
     private static final int memory = 10 * 1024;
     private static final int iterations = 10;
 
-    public static byte[] hash(byte[] password) {
+    private static final byte[] DUMMY_SALT = new byte[saltLength];
+    private static final byte[] DUMMY_PASSWORD = new byte[hashLength];
+
+    public static byte[][] hash(byte[] password) {
         byte[] salt = new byte[saltLength];
         secureRandom.nextBytes(salt);
+        return new byte[][]{ hash(password, salt), salt };
+    }
+
+    public static byte[] hash(byte[] _password, byte[] _salt) {
+        byte[] salt = _salt != null ? _salt : DUMMY_SALT;
+        byte[] password = _password != null ? _password : DUMMY_PASSWORD;
 
         Argon2BytesGenerator generator = new Argon2BytesGenerator();
         generator.init(new Argon2Parameters
@@ -30,6 +39,9 @@ public class PasswordUtil {
 
         byte[] hash = new byte[hashLength];
         generator.generateBytes(password, hash);
+        if (_password == null || _salt == null) {
+            return null;
+        }
         // might as well clear password because it should not be reused
         Arrays.fill(password, (byte) 0);
         return hash;

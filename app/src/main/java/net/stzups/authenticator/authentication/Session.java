@@ -25,10 +25,7 @@ public class Session {
     }
 
     public static boolean verify(Session session, byte[] token) {
-        byte[] hash;
-        if (session != null) hash = session.hash; else hash = null;
-
-        return Arrays.equals(hash(token), hash);
+        return Arrays.equals(hash(token), session != null ? session.hash : null);
     }
 
     private static byte[] hash(byte[] token) {
