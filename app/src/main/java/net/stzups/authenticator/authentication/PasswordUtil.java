@@ -4,18 +4,17 @@ import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 public class PasswordUtil {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     private static final int saltLength = 128 / 8;
-    private static final int hashLength = 256 / 8;
+    static final int hashLength = 256 / 8;
     private static final int parallelism = 1;
     private static final int memory = 10 * 1024;
     private static final int iterations = 10;
 
-    public static byte[] hash(byte[] token) {
+    public static byte[] hash(byte[] password) {
         byte[] salt = new byte[saltLength];
         secureRandom.nextBytes(salt);
 
@@ -29,9 +28,7 @@ public class PasswordUtil {
                 .build());
 
         byte[] hash = new byte[hashLength];
-        generator.generateBytes(token, hash);
-        // might as well since the token shouldn't be reused
-        Arrays.fill(token, (byte) 0);
+        generator.generateBytes(password, hash);
         return hash;
     }
 }

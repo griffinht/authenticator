@@ -2,20 +2,19 @@ package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
+import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.authentication.SessionCookie;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class AuthenticationHandler extends HttpHandler {
-    private Map<Long, Session> sessions = new HashMap<>();
+    private Database database;
 
-    public AuthenticationHandler() {
+    public AuthenticationHandler(Database database) {
         super("/authenticate");
+        this.database = database;
     }
 
     @Override
@@ -27,7 +26,7 @@ public class AuthenticationHandler extends HttpHandler {
             throw new UnauthorizedException("Missing session cookie");
         }
 
-        Session session = sessions.get(sessionCookie.id);
+        Session session = database.getSession(sessionCookie.id);
         byte[] hash;
         if (session == null) {
             System.err.println("bad id");

@@ -2,8 +2,9 @@ package net.stzups.authenticator;
 
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.handler.codec.http.*;
+import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.handlers.AuthenticationHandler;
 import net.stzups.authenticator.handlers.LoginHandler;
 import net.stzups.netty.Server;
@@ -24,12 +25,14 @@ public class Authenticator {
                     TestLog.setLogger(channel);
                     super.initChannel(channel);
 
+                    Database database = new Database();
+
                     channel.pipeline()
                             .addLast(new HttpContentCompressor())
                             .addLast(new ChunkedWriteHandler())
                             .addLast(new DefaultHttpServerHandler()
-                                    .addLast(new LoginHandler())
-                                    .addLast(new AuthenticationHandler())
+                                    .addLast(new LoginHandler(database))
+                                    .addLast(new AuthenticationHandler(database))
                             );
                 }
             });

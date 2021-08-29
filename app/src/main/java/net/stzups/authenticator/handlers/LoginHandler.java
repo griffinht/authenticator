@@ -3,6 +3,8 @@ package net.stzups.authenticator.handlers;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
+import net.stzups.authenticator.authentication.Database;
+import net.stzups.authenticator.authentication.Login;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
@@ -12,29 +14,27 @@ import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 import net.stzups.netty.http.objects.Form;
 
-import java.security.SecureRandom;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 public class LoginHandler extends HttpHandler {
     private static class LoginRequest {
         private final String username;
-        private final String password;
+        private final byte[] password;
         private final boolean remember;
 
         LoginRequest(FullHttpRequest request) throws BadRequestException {
             Form form = new Form(request);
             username = form.getText("username");
-            password = form.getText("password");
+            password = form.getText("password").getBytes(StandardCharsets.UTF_8);
             remember = form.getCheckbox("remember");
         }
     }
 
-    private Map<Long, Session> sessions = new HashMap<>();
-    private Map<Long, byte[]> remember = new HashMap<>();
+    private Database database;
 
-    public LoginHandler() {
+    public LoginHandler(Database database) {
         super("/login");
+        this.database = database;
     }
 
     @Override
@@ -44,17 +44,21 @@ public class LoginHandler extends HttpHandler {
         }
 
         LoginRequest loginRequest = new LoginRequest(request);
-        if (!loginRequest.username.equals("user") || !loginRequest.password.equals("password")) {
-            throw new UnauthorizedException("Bad username/password");
+        if (!Login.verify(database.getLogin(loginRequest.username), loginRequest.password)) {
+            throw new UnauthorizedException("bad username/password");
         }
 
-        SecureRandom secureRandom = new SecureRandom();
-        sessions.put(secureRandom.nextLong(), new Session());
+        System.err.println("good login");
+
+        if (loginRequest.remember) {
+            System.err.println("todo remember");
+            //todo
+        }
 
         HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
 
         Session session = createSession(response);
-        sessions.put(session.id, session);
+        database.addSession(session);
 
         HttpUtils.send(ctx, request, response);
         return true;
