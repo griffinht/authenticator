@@ -6,6 +6,7 @@ import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Login;
 import net.stzups.authenticator.authentication.Session;
+import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.BadRequestException;
@@ -48,7 +49,7 @@ public class LoginHandler extends HttpHandler {
             throw new UnauthorizedException("Bad login");
         }
 
-        System.err.println("Good login");
+        TestLog.getLogger(ctx).info("Good login");
 
         if (loginRequest.remember) {
             System.err.println("todo remember");

@@ -9,6 +9,7 @@ import net.stzups.authenticator.DeserializationException;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.authentication.SessionCookie;
+import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
@@ -25,7 +26,7 @@ public class AuthenticationHandler extends HttpHandler {
     @Override
     public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) throws HttpException {
         //todo verify that this is actually coming from the proxy
-        //System.out.println(request.headers());
+        //System.err.println(request.headers());
         SessionCookie sessionCookie;
         try {
              sessionCookie = SessionCookie.getSessionCookie(request);
@@ -40,7 +41,7 @@ public class AuthenticationHandler extends HttpHandler {
             throw new UnauthorizedException("Bad session");
         }
 
-        System.err.println("Good session");
+        TestLog.getLogger(ctx).info("Good session");
 
         HttpUtils.send(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
         return true;

@@ -20,8 +20,12 @@ public class Database {
         sessions.put(session.id, session);
     }
 
-    public void removeSession(long id) {
-        sessions.remove(id);
+    public Session removeSession(SessionCookie sessionCookie) {
+        Session session = getSession(sessionCookie.id);
+        if (session != null && Session.verify(session, sessionCookie.token)) {
+            return sessions.remove(sessionCookie.id);
+        }
+        return null;
     }
 
     public Login getLogin(String username) {

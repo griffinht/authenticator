@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.handler.codec.http.HttpHeaderNames;
 import io.netty.handler.codec.http.HttpRequest;
+import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.DefaultCookie;
 import io.netty.handler.codec.http.cookie.ServerCookieDecoder;
@@ -57,7 +58,7 @@ public class SessionCookie {
         return null;
     }
 
-    public static SessionCookie removeSessionCookie(HttpRequest request) {
+    public static SessionCookie removeSessionCookie(HttpRequest request, HttpResponse response) {
         SessionCookie sessionCookie;
         try {
             sessionCookie = getSessionCookie(request);
@@ -66,9 +67,11 @@ public class SessionCookie {
             return null;
         }
 
+        //if (sessionCookie == null) return null; might as well always clear the cookie, even if nothing was found
+
         DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, "");
         cookie.setMaxAge(0);
-        request.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+        response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
 
         return sessionCookie;
     }
