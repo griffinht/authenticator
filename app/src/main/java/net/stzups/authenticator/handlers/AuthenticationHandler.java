@@ -1,4 +1,4 @@
-package net.stzups.authenticator;
+package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.FullHttpRequest;
@@ -15,10 +15,10 @@ import net.stzups.netty.http.handler.HttpHandler;
 import java.util.Set;
 
 public class AuthenticationHandler extends HttpHandler {
-    private static final String COOKIE_NAME = "session";
+    static final String COOKIE_NAME = "session";
 
-    protected AuthenticationHandler() {
-        super("/authenticator");
+    public AuthenticationHandler() {
+        super("/authenticate");
     }
 
     @Override
@@ -27,7 +27,7 @@ public class AuthenticationHandler extends HttpHandler {
         //System.out.println(request.headers());
         String cookiesHeader = request.headers().get(HttpHeaderNames.COOKIE);
         if (cookiesHeader == null) {
-            throw new UnauthorizedException("Missing any cookie");
+            throw new UnauthorizedException("Missing cookies");
 
         }
 
@@ -37,7 +37,10 @@ public class AuthenticationHandler extends HttpHandler {
                 continue;
             }
 
-            System.out.println(cookie.value());
+            if (!cookie.value().equals("secret_password")) {
+                throw new UnauthorizedException("wrong secret password");
+            }
+
             response.setStatus(HttpResponseStatus.OK);
             HttpUtils.send(ctx, request, response);
             return true;

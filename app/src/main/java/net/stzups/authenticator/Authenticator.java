@@ -4,6 +4,8 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import net.stzups.authenticator.handlers.AuthenticationHandler;
+import net.stzups.authenticator.handlers.LoginHandler;
 import net.stzups.netty.Server;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.DefaultHttpServerHandler;
@@ -26,7 +28,8 @@ public class Authenticator {
                             .addLast(new HttpContentCompressor())
                             .addLast(new ChunkedWriteHandler())
                             .addLast(new DefaultHttpServerHandler()
-                                .addLast(new AuthenticationHandler())
+                                    .addLast(new LoginHandler())
+                                    .addLast(new AuthenticationHandler())
                             );
                 }
             });
