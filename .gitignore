@@ -1,9 +1,6 @@
 build
 bin
 
-# Node
-node_modules
-package-lock.json
 # IntelliJ Idea
 .idea
 
