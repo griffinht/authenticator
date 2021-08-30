@@ -6,19 +6,23 @@ import io.netty.handler.stream.ChunkedWriteHandler;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.handlers.AuthenticationHandler;
 import net.stzups.authenticator.handlers.LoginHandler;
+import net.stzups.authenticator.handlers.LogoutHandler;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.DefaultHttpServerHandler;
+import net.stzups.netty.http.handler.HttpHandler;
 
 import javax.net.ssl.SSLException;
 
 public class HttpServerInitializer extends net.stzups.netty.http.HttpServerInitializer {
-    private final LoginHandler loginHandler;
-    private final AuthenticationHandler authenticationHandler;
+    private final HttpHandler[] httpHandlers;
 
     protected HttpServerInitializer(Config config, Database database) throws SSLException {
         super(config);
-        this.loginHandler = new LoginHandler(database);
-        this.authenticationHandler = new AuthenticationHandler(database);
+        this.httpHandlers = new HttpHandler[]{
+                new LoginHandler(database),
+                new AuthenticationHandler(database),
+                new LogoutHandler(database)
+        };
     }
 
 
@@ -31,8 +35,7 @@ public class HttpServerInitializer extends net.stzups.netty.http.HttpServerIniti
             .addLast(new HttpContentCompressor())
             .addLast(new ChunkedWriteHandler())
             .addLast(new DefaultHttpServerHandler()
-                    .addLast(loginHandler)
-                    .addLast(authenticationHandler)
+                    .addLast(httpHandlers)
             );
     }
 }

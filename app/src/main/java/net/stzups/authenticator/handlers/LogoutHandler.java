@@ -19,7 +19,7 @@ public class LogoutHandler extends HttpHandler {
 
     @Override
     public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) {
-        HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+        HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SEE_OTHER);
         SessionCookie sessionCookie = SessionCookie.removeSessionCookie(request, response);
         response.headers().set(HttpHeaderNames.LOCATION, "/login/");
         HttpUtils.send(ctx, request, response);
@@ -32,6 +32,6 @@ public class LogoutHandler extends HttpHandler {
             TestLog.getLogger(ctx).info("Logged out but did not expire session");
         }
         TestLog.getLogger(ctx).info("Tried to log out with no session cookie");
-        return false;
+        return true;
     }
 }

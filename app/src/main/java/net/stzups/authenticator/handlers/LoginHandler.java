@@ -11,7 +11,6 @@ import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.BadRequestException;
 import net.stzups.netty.http.exception.exceptions.MethodNotAllowedException;
-import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 import net.stzups.netty.http.objects.Form;
 
@@ -44,24 +43,30 @@ public class LoginHandler extends HttpHandler {
             throw new MethodNotAllowedException(request.method(), HttpMethod.POST);
         }
 
+
+        HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SEE_OTHER);
+
         LoginRequest loginRequest = new LoginRequest(request);
         if (!Login.verify(database.getLogin(loginRequest.username), loginRequest.password)) {
-            throw new UnauthorizedException("Bad login");
+            TestLog.getLogger(ctx).info("Bad login");
+            response.headers().set(HttpHeaderNames.LOCATION, "/login/");
+            HttpUtils.send(ctx, request, response);
+            return true;
         }
 
         TestLog.getLogger(ctx).info("Good login");
 
         if (loginRequest.remember) {
-            System.err.println("todo remember");
+            TestLog.getLogger(ctx).info("Remember");
             //todo
         }
 
-        HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
-
         Session session = createSession(response);
+        response.headers().set(HttpHeaderNames.LOCATION, "/");
+        HttpUtils.send(ctx, request, response);
+
         database.addSession(session);
 
-        HttpUtils.send(ctx, request, response);
         return true;
     }
 
