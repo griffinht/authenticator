@@ -25,11 +25,16 @@ public class LogoutHandler extends HttpHandler {
         HttpUtils.send(ctx, request, response);
         // do the heavy lifting after sending the response
         if (sessionCookie != null) {
-            Session session = database.removeSession(sessionCookie);
+            Session session = database.getSession(sessionCookie.id);
             if (session != null) {
-                TestLog.getLogger(ctx).info("Logged out and expired session " + session);
+                if (Session.verify(session, sessionCookie.token)) {
+                    database.removeSession(session);
+                    TestLog.getLogger(ctx).info("Logged out and expired session " + session);
+                } else {
+                    TestLog.getLogger(ctx).warning("Tried to expire session " + session + " but had bad authentication token");
+                }
             }
-            TestLog.getLogger(ctx).info("Logged out but did not expire session");
+            TestLog.getLogger(ctx).info("Tried to log out with non existent session id");
         }
         TestLog.getLogger(ctx).info("Tried to log out with no session cookie");
         return true;
