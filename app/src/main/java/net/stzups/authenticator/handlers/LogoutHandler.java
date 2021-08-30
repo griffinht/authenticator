@@ -13,7 +13,7 @@ public class LogoutHandler extends HttpHandler {
     private final Database database;
 
     public LogoutHandler(Database database) {
-        super("/logout");
+        super("/api/logout");
         this.database = database;
     }
 

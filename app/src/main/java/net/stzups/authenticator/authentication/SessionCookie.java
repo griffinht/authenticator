@@ -31,12 +31,19 @@ public class SessionCookie {
         }
     }
 
+    private static DefaultCookie createCookie(String value) {
+        DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, value);
+        cookie.setPath("/");
+        return cookie;
+    }
+
     public static Cookie createSessionCookie(long id, byte[] token) {
         ByteBuf byteBuf = Unpooled.buffer();
         byteBuf.writeLong(id);
         byteBuf.writeBytes(token);
-        DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, Base64.encode(byteBuf));
+        DefaultCookie cookie = createCookie(Base64.encode(byteBuf));
         byteBuf.release();
+
         return cookie;
     }
 
@@ -69,7 +76,7 @@ public class SessionCookie {
 
         //if (sessionCookie == null) return null; might as well always clear the cookie, even if nothing was found
 
-        DefaultCookie cookie = new DefaultCookie(COOKIE_NAME, "");
+        DefaultCookie cookie = createCookie("");
         cookie.setMaxAge(0);
         response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
 

@@ -33,7 +33,7 @@ public class LoginHandler extends HttpHandler {
     private final Database database;
 
     public LoginHandler(Database database) {
-        super("/login");
+        super("/api/login");
         this.database = database;
     }
 

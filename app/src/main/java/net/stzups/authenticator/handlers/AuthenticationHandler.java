@@ -15,7 +15,7 @@ public class AuthenticationHandler extends HttpHandler {
     private final Database database;
 
     public AuthenticationHandler(Database database) {
-        super("/authenticate");
+        super("/api/authenticate");
         this.database = database;
     }
 
