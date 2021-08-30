@@ -30,6 +30,9 @@ public class LoginHandler extends HttpHandler {
         }
     }
 
+    static final String LOGIN_PAGE = "/public/";  // page where login requests come from
+    static final String LOGGED_IN_PAGE = "/"; // page where logged in users go
+
     private final Database database;
 
     public LoginHandler(Database database) {
@@ -49,7 +52,7 @@ public class LoginHandler extends HttpHandler {
         LoginRequest loginRequest = new LoginRequest(request);
         if (!Login.verify(database.getLogin(loginRequest.username), loginRequest.password)) {
             TestLog.getLogger(ctx).info("Bad login");
-            response.headers().set(HttpHeaderNames.LOCATION, "/login/");
+            response.headers().set(HttpHeaderNames.LOCATION, LOGIN_PAGE);
             HttpUtils.send(ctx, request, response);
             return true;
         }
@@ -62,7 +65,7 @@ public class LoginHandler extends HttpHandler {
         }
 
         Session session = createSession(response);
-        response.headers().set(HttpHeaderNames.LOCATION, "/");
+        response.headers().set(HttpHeaderNames.LOCATION, LOGGED_IN_PAGE);
         HttpUtils.send(ctx, request, response);
 
         database.addSession(session);

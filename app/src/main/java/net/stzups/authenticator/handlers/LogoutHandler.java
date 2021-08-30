@@ -21,7 +21,7 @@ public class LogoutHandler extends HttpHandler {
     public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) {
         HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SEE_OTHER);
         SessionCookie sessionCookie = SessionCookie.removeSessionCookie(request, response);
-        response.headers().set(HttpHeaderNames.LOCATION, "/login/");
+        response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGIN_PAGE);
         HttpUtils.send(ctx, request, response);
         // do the heavy lifting after sending the response
         if (sessionCookie == null) {
