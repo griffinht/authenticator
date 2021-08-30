@@ -1,5 +1,7 @@
 package net.stzups.authenticator.authentication;
 
+import net.stzups.authenticator.User;
+
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,9 +9,12 @@ import java.util.Map;
 public class Database {
     private Map<Long, Session> sessions = new HashMap<>();
     private Map<String, Login> logins = new HashMap<>();
+    private Map<Long, User> users = new HashMap<>();
 
     public Database() {
-        addLogin("admin", new Login("password".getBytes(StandardCharsets.UTF_8)));
+        User user = new User("your mom");
+        users.put(user.id, user);
+        logins.put("admin", new Login("password".getBytes(StandardCharsets.UTF_8), user.id));
     }
 
     public Session getSession(long id) {
@@ -24,16 +29,11 @@ public class Database {
        sessions.remove(session.id);
     }
 
+    public User getUser(long id) {
+        return users.get(id);
+    }
+
     public Login getLogin(String username) {
         return logins.get(username);
-    }
-
-    public void addLogin(String username, Login login) {
-        logins.put(username, login);
-    }
-
-    public void removeLogin(String username) {
-        //todo verify before removal with password?
-        logins.remove(username);
     }
 }
