@@ -9,7 +9,6 @@ public class TOTP {
     private static long unixTime() {
         return System.currentTimeMillis() / 1000L;
     }
-    private static final int TIME_STEP = 30;
 
     private static long t(long unixTime, long t0, int timeStep) {
         return (unixTime - t0) / timeStep;
@@ -24,8 +23,8 @@ public class TOTP {
         }
     }
 
-    public static byte[] getTOTP(byte[] secret, int offset) {
-        return HOTP.getHOTP(secret, getBytes(t(unixTime(), T0, TIME_STEP) + offset));
+    public static byte[] getTOTP(byte[] secret, int timeStep, int offset) {
+        return HOTP.getHOTP(secret, getBytes(t(unixTime(), T0, timeStep) + offset));
     }
 
     /**
@@ -50,6 +49,20 @@ public class TOTP {
             string.insert(0, "0");
         }
         return string.toString();
+    }
+
+    public static boolean verify(byte[] secret, int timeStep, int offsetStart, int offsetAmount, int code, int codeLength) {
+        int[] codes = new int[offsetAmount];
+
+        for (int i = 0; i < offsetAmount; i++) {
+            codes[i] = toCode(getTOTP(secret, timeStep, offsetStart + i), codeLength);
+        }
+
+        for (int c : codes) {
+            if (code == c) return true;
+        }
+
+        return false;
     }
 
     public static String getUri(byte[] secret) {
