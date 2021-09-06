@@ -13,28 +13,46 @@ import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
+import java.util.Date;
 
 public class Session {
+    private static final Duration EXPIRATION = Duration.ofDays(1); // expiration for session cookies, which shouldn't really last as long as persistent ones
+    private static final Duration PERSISTENT_EXPIRATION = Duration.ofDays(90);
+
     static final int tokenLength = 128 / 8;
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
     public final long id;
+    private final Date created;
+    private final boolean persistent;
     private final byte[] hash;
 
-    public Session(HttpResponse response) {
+    public Session(HttpResponse response, boolean persistent) {
         id = secureRandom.nextLong();
+        created = Date.from(Instant.now());
+        this.persistent = persistent;
 
         byte[] token = new byte[tokenLength];
         secureRandom.nextBytes(token);
         Cookie cookie = SessionCookie.createSessionCookie(id, token);
+        if (persistent) cookie.setMaxAge(PERSISTENT_EXPIRATION.toMillis());
         response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
+
         hash = hash(token);
     }
 
-    public static boolean verify(Session session, byte[] token) {
-        return Arrays.equals(hash(token), session != null ? session.hash : null);
+    public static boolean verify(Session session, SessionCookie sessionCookie) {
+        boolean hash = Arrays.equals(hash(sessionCookie.token), session != null ? session.hash : null);
+        // check for null or expired session
+        if (session == null || Instant.now().isAfter(session.created.toInstant()
+                        .plus(session.persistent ? PERSISTENT_EXPIRATION : EXPIRATION))) {
+            return false;
+        }
+        return hash;
     }
 
     private static byte[] hash(byte[] token) {
@@ -67,7 +85,7 @@ public class Session {
         }
 
         Session session = database.getSession(sessionCookie.id);
-        if (!Session.verify(session, sessionCookie.token)) {
+        if (!Session.verify(session, sessionCookie)) {
             throw new UnauthorizedException("Bad session");
         }
 

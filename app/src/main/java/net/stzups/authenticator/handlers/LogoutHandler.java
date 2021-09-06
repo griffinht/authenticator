@@ -35,7 +35,7 @@ public class LogoutHandler extends HttpHandler {
             return true;
         }
 
-        if (!Session.verify(session, sessionCookie.token)) {
+        if (!Session.verify(session, sessionCookie)) {
             TestLog.getLogger(ctx).warning("Tried to expire session " + session + " but had bad authentication token");
             return true;
         }

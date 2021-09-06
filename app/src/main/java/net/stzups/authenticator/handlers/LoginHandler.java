@@ -2,7 +2,6 @@ package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
-import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Login;
 import net.stzups.authenticator.authentication.Session;
@@ -50,7 +49,8 @@ public class LoginHandler extends HttpHandler {
         HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SEE_OTHER);
 
         LoginRequest loginRequest = new LoginRequest(request);
-        if (!Login.verify(database.getLogin(loginRequest.username), loginRequest.password)) {
+        Login login = database.getLogin(loginRequest.username);
+        if (!Login.verify(login, loginRequest.password)) {
             TestLog.getLogger(ctx).info("Bad login");
             response.headers().set(HttpHeaderNames.LOCATION, LOGIN_PAGE);
             HttpUtils.send(ctx, request, response);
@@ -59,12 +59,9 @@ public class LoginHandler extends HttpHandler {
 
         TestLog.getLogger(ctx).info("Good login");
 
-        if (loginRequest.remember) {
-            TestLog.getLogger(ctx).info("Remember");
-            //todo
-        }
+        //todo check for 2fa
 
-        Session session = createSession(response);
+        Session session = new Session(response, loginRequest.remember);
         response.headers().set(HttpHeaderNames.LOCATION, LOGGED_IN_PAGE);
         HttpUtils.send(ctx, request, response);
 
@@ -73,9 +70,4 @@ public class LoginHandler extends HttpHandler {
         return true;
     }
 
-    private static Session createSession(HttpResponse response) {
-        Session session = new Session();
-        response.headers().set(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(session.generate()));
-        return session;
-    }
 }
