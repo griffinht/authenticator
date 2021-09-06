@@ -18,17 +18,6 @@ public class Otpauth {
             this.string = string;
         }
     }
-    public enum Digits {
-        SIX(6),
-        EIGHT(8),
-        ;
-
-        public final int digits;
-
-        Digits(int digits) {
-            this.digits = digits;
-        }
-    }
 
     enum Algorithm {
         SHA1("SHA1"),
@@ -45,17 +34,18 @@ public class Otpauth {
 
     /**
      * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+     * authy seems to work with digits 4-8
      */
-    public static String getUri(Type type, String label, byte[] secret, String issuer, Digits digits, Algorithm algorithm, int counter, int period) {
+    public static String getUri(Type type, String label, byte[] secret, String issuer, int digits, Algorithm algorithm, Integer counter, Integer period) {
         String base = "otpauth://" + type.string + "/" + label;
 
         Map<String, String> params = new HashMap<>();
         params.put("secret", new String(Base32.encode(secret), StandardCharsets.UTF_8));
         params.put("issuer", issuer);
-        params.put("digits", "" + digits.digits);
+        params.put("digits", "" + digits);
         params.put("algorithm", algorithm.string);
-        params.put("counter", "" + counter);
-        params.put("period", "" + period);
+        if (counter != null) params.put("counter", "" + counter);
+        if (period != null) params.put("period", "" + period);
 
         StringBuilder query = new StringBuilder("?");
         for (Map.Entry<String, String> param : params.entrySet()) {

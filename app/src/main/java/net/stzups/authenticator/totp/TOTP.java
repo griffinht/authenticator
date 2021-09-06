@@ -47,6 +47,6 @@ public class TOTP {
     }
 
     public static String getUri(byte[] secret) {
-        return Otpauth.getUri(Otpauth.Type.TOTP, "corporationn:john@corpocomc.com", secret, "issuerCorp", Otpauth.Digits.SIX, Otpauth.Algorithm.SHA1, 0, 30);
+        return Otpauth.getUri(Otpauth.Type.TOTP, "Corporation:Johnny%20Is%20Cool", secret, "google.com", 6, Otpauth.Algorithm.SHA1, null, 30);
     }
 }
