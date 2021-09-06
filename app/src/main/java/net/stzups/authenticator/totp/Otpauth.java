@@ -43,6 +43,9 @@ public class Otpauth {
         }
     }
 
+    /**
+     * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+     */
     public static String getUri(Type type, String label, byte[] secret, String issuer, Digits digits, int counter, int period) {
         String base = "otpauth://" + type.string + "/" + label;
 

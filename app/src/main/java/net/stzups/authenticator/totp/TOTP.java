@@ -1,10 +1,28 @@
 package net.stzups.authenticator.totp;
 
+import com.google.zxing.WriterException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
+import javax.imageio.ImageIO;
+import java.io.File;
+import java.io.IOException;
+import java.util.Random;
+
 // this might break because of y38
 public class TOTP {
+    public TOTP() {
+        byte[] secret = new byte[10];
+        new Random().nextBytes(secret);
+        try {
+            ImageIO.write(QrCode.getQrCode(getUri(secret)), "png", new File("out.png"));
+        } catch (IOException | WriterException e) {
+            throw new RuntimeException();
+        }
+    }
+
+
+
     private static final long T0 = 0;
     private static long unixTime() {
         return System.currentTimeMillis() / 1000L;
@@ -25,11 +43,10 @@ public class TOTP {
     }
 
     public static byte[] getTotp(byte[] secret) {
-        long t = t(unixTime(), T0, TIME_STEP);
-        return HOTP.HOTP(secret, getBytes(t));
+        return HOTP.HOTP(secret, getBytes(t(unixTime(), T0, TIME_STEP)));
     }
 
     public static String getUri(byte[] secret) {
-        return Otpauth.getUri(Otpauth.Type.TOTP, "label", secret, "issuer", Otpauth.Digits.EIGHT, 0, 30);
+        return Otpauth.getUri(Otpauth.Type.TOTP, "corporation:john@corpocom.com", secret, "corp", Otpauth.Digits.EIGHT, 0, 30);
     }
 }
