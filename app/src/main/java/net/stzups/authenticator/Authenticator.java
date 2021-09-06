@@ -1,13 +1,13 @@
 package net.stzups.authenticator;
 
-import net.stzups.authenticator.totp.TOTP;
+import io.netty.channel.ChannelFuture;
+import net.stzups.authenticator.authentication.Database;
+import net.stzups.netty.Server;
 
 public class Authenticator {
 
 
     public static void main(String[] args) throws Exception {
-        new TOTP();
-        /*
         try (Server server = new Server(8080)) {
             Runtime.getRuntime().addShutdownHook(new Thread(server::close));
 
@@ -16,6 +16,6 @@ public class Authenticator {
             System.err.println("Started server");
             closeFuture.sync();
             System.err.println("Server closed");
-        }*/
+        }
     }
 }

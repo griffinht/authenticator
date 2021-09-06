@@ -1,32 +1,10 @@
 package net.stzups.authenticator.totp;
 
-import com.google.zxing.WriterException;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
-import java.util.Random;
-
 // this might break because of y38
 public class TOTP {
-    public TOTP() {
-        byte[] secret = new byte[16];
-        new Random().nextBytes(secret);
-        try {
-            ImageIO.write(QrCode.getQrCode(getUri(secret)), "png", new File("out.png"));
-        } catch (IOException | WriterException e) {
-            throw new RuntimeException();
-        }
-        for (int i = -5; i < 5; i++) {
-            int code = toCode(getTOTP(secret, i), 6);
-            System.err.println(toCode(code, 6) + ", " + code);
-        }
-    }
-
-
-
     private static final long T0 = 0;
     private static long unixTime() {
         return System.currentTimeMillis() / 1000L;
