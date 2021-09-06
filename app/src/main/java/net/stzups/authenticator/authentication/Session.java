@@ -3,6 +3,7 @@ package net.stzups.authenticator.authentication;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
+import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import net.stzups.authenticator.DeserializationException;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
@@ -19,20 +20,17 @@ public class Session {
 
     private static final SecureRandom secureRandom = new SecureRandom();
 
-    public final long id = secureRandom.nextLong();
-    public byte[] hash;
+    public final long id;
+    private final byte[] hash;
 
-    public boolean canManage() {
-        return true;
-    }
+    public Session(HttpResponse response) {
+        id = secureRandom.nextLong();
 
-    public Cookie generate() {
         byte[] token = new byte[tokenLength];
         secureRandom.nextBytes(token);
         Cookie cookie = SessionCookie.createSessionCookie(id, token);
+        response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
         hash = hash(token);
-
-        return cookie;
     }
 
     public static boolean verify(Session session, byte[] token) {
