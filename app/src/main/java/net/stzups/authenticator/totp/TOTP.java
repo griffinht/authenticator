@@ -12,7 +12,7 @@ import java.util.Random;
 // this might break because of y38
 public class TOTP {
     public TOTP() {
-        byte[] secret = new byte[10];
+        byte[] secret = new byte[16];
         new Random().nextBytes(secret);
         try {
             ImageIO.write(QrCode.getQrCode(getUri(secret)), "png", new File("out.png"));
@@ -47,6 +47,6 @@ public class TOTP {
     }
 
     public static String getUri(byte[] secret) {
-        return Otpauth.getUri(Otpauth.Type.TOTP, "corporation:john@corpocom.com", secret, "corp", Otpauth.Digits.EIGHT, 0, 30);
+        return Otpauth.getUri(Otpauth.Type.TOTP, "corporationn:john@corpocomc.com", secret, "issuerCorp", Otpauth.Digits.SIX, Otpauth.Algorithm.SHA1, 0, 30);
     }
 }

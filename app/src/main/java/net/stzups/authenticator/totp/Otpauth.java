@@ -1,8 +1,6 @@
 package net.stzups.authenticator.totp;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
-import io.netty.handler.codec.base64.Base64;
+import org.bouncycastle.util.encoders.Base32;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -25,36 +23,39 @@ public class Otpauth {
         EIGHT(8),
         ;
 
-        public  final int digits;
+        public final int digits;
 
         Digits(int digits) {
             this.digits = digits;
         }
     }
 
-    private static String toBase64(byte[] value) {
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(value);
-        ByteBuf base64 = Base64.encode(byteBuf);
-        byteBuf.release();
-        try {
-            return base64.toString(StandardCharsets.UTF_8);
-        } finally {
-            base64.release();
+    enum Algorithm {
+        SHA1("SHA1"),
+        SHA256("SHA256"),
+        SHA512("SHA512"),
+        ;
+
+        public final String string;
+
+        Algorithm(String string) {
+            this.string = string;
         }
     }
 
     /**
      * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
      */
-    public static String getUri(Type type, String label, byte[] secret, String issuer, Digits digits, int counter, int period) {
+    public static String getUri(Type type, String label, byte[] secret, String issuer, Digits digits, Algorithm algorithm, int counter, int period) {
         String base = "otpauth://" + type.string + "/" + label;
 
         Map<String, String> params = new HashMap<>();
-        params.put("secret", toBase64(secret));
-        //params.put("issuer", issuer);
-        //params.put("digits", "" + digits.digits);
-        //params.put("counter", "" + counter);
-        //params.put("period", "" + period);
+        params.put("secret", new String(Base32.encode(secret), StandardCharsets.UTF_8));
+        params.put("issuer", issuer);
+        params.put("digits", "" + digits.digits);
+        params.put("algorithm", algorithm.string);
+        params.put("counter", "" + counter);
+        params.put("period", "" + period);
 
         StringBuilder query = new StringBuilder("?");
         for (Map.Entry<String, String> param : params.entrySet()) {
@@ -64,6 +65,7 @@ public class Otpauth {
             query.append(param.getKey()).append("=").append(param.getValue());
         }
 
+        System.err.println(base + query);
         return base + query;
     }
 }
