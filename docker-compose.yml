@@ -4,7 +4,7 @@ services:
   nginx:
     image: nginx
     ports:
-      - 80:80
+      - 1025:80
     extra_hosts:
       host.docker.internal: 192.168.0.254
     network_mode: bridge
