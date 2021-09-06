@@ -10,17 +10,17 @@ public class HOTP {
         return null;
     }
     public static Object HOTP(byte[] key, byte[] message, long counter) {
-
+        return null;
     }
 
-    private static byte[] hmacSha1(byte[] key, byte[] value) {
+    public static byte[] hmacSha1(byte[] key, byte[] value) {
         Mac mac;
         try {
             mac = Mac.getInstance("HmacSHA1");
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException(e);
         }
-        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "RAW");//todo HmacSHA1?
+        SecretKeySpec secretKeySpec = new SecretKeySpec(key, "HmacSHA1");
         try {
             mac.init(secretKeySpec);
         } catch (InvalidKeyException e) {

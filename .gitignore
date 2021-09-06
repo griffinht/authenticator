@@ -9,6 +9,6 @@ bin
 
 # Gradle binaries
 # just install gradle lol
-gradle
+gradle/wrapper
 gradlew
 gradlew.bat

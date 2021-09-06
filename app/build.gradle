@@ -3,9 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '7.0.0'
 }
 
-repositories {
-    mavenCentral()
-}
+apply from: rootProject.file('gradle/test.gradle')
 
 dependencies {
     implementation 'com.github.stzups:netty-http:1.1.2'

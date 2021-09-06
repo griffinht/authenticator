@@ -14,7 +14,7 @@ public class TOTP {
 
     private static void generate() {
         long t = t(unixTime(), T0, TIME_STEP);
-        Object totp = HOTP.HOTP(null, t);
+        //Object totp = HOTP.HOTP(null, t);
     }
 
 }
