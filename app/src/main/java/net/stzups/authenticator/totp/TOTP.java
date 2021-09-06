@@ -74,9 +74,6 @@ public class TOTP {
         return string.toString();
     }
 
-    /**
-     * https://www.twilio.com/docs/verify/quickstarts/totp#create-a-qr-code
-     */
     public static String getUri(byte[] secret) {
         return Otpauth.getUri(Otpauth.Type.TOTP, "Corporation:Johnny%20Is%20Cool", secret, "google.com", 6, Otpauth.Algorithm.SHA1, null, 30);
     }

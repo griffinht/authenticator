@@ -34,7 +34,9 @@ public class Otpauth {
 
     /**
      * https://github.com/google/google-authenticator/wiki/Key-Uri-Format
+     * https://www.twilio.com/docs/verify/quickstarts/totp#create-a-qr-code
      * authy seems to work with digits 4-8
+     * example: otpauth://totp/Twilio:John%E2%80%99s%20Account%20Name?secret=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ&issuer=Twilio&algorithm=SHA1&digits=6&period=30
      */
     public static String getUri(Type type, String label, byte[] secret, String issuer, int digits, Algorithm algorithm, Integer counter, Integer period) {
         String base = "otpauth://" + type.string + "/" + label;
