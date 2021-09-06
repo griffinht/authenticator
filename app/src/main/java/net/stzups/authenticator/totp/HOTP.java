@@ -6,13 +6,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 
 public class HOTP {
-    private static Object truncate(byte[] hmacSHA1) {
-        return null;
-    }
-    public static Object HOTP(byte[] key, byte[] message, long counter) {
-        return null;
-    }
-
     public static byte[] hmacSha1(byte[] key, byte[] value) {
         Mac mac;
         try {
@@ -27,5 +20,9 @@ public class HOTP {
             throw new RuntimeException(e);
         }
         return mac.doFinal(value);
+    }
+
+    public static byte[] HOTP(byte[] secret, byte[] movingFactor) {
+        return hmacSha1(secret, movingFactor);
     }
 }

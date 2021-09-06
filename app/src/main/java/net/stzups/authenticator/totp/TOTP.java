@@ -1,5 +1,8 @@
 package net.stzups.authenticator.totp;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
+
 // this might break because of y38
 public class TOTP {
     private static final long T0 = 0;
@@ -12,9 +15,21 @@ public class TOTP {
         return (unixTime - t0) / timeStep;
     }
 
-    private static void generate() {
-        long t = t(unixTime(), T0, TIME_STEP);
-        //Object totp = HOTP.HOTP(null, t);
+    private static byte[] getBytes(long value) {
+        ByteBuf byteBuf = Unpooled.copyLong(value);
+        try {
+            return byteBuf.array();
+        } finally {
+            byteBuf.release();
+        }
     }
 
+    public static byte[] getTotp(byte[] secret) {
+        long t = t(unixTime(), T0, TIME_STEP);
+        return HOTP.HOTP(secret, getBytes(t));
+    }
+
+    public static String getUri(byte[] secret) {
+        return Otpauth.getUri(Otpauth.Type.TOTP, "label", secret, "issuer", Otpauth.Digits.EIGHT, 0, 30);
+    }
 }
