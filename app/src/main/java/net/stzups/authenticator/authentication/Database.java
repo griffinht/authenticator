@@ -7,12 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Database {
-    private Map<Long, Session> sessions = new HashMap<>();
-    private Map<String, Login> logins = new HashMap<>();
-    private Map<Long, User> users = new HashMap<>();
+    private Map<Long, Session> sessions = new HashMap<>(); // session id to session
+    private Map<String, Login> logins = new HashMap<>(); // user id to login
+    private Map<Long, User> users = new HashMap<>(); // user id to user
+    private Map<Long, byte[]> totp = new HashMap<>(); // user id to totp
 
     public Database() {
-        User user = new User("your mom");
+        User user = new User("user");
         users.put(user.id, user);
         logins.put("admin", new Login("password".getBytes(StandardCharsets.UTF_8), user.id));
     }
