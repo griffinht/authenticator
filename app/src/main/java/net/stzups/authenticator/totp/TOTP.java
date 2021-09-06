@@ -19,6 +19,10 @@ public class TOTP {
         } catch (IOException | WriterException e) {
             throw new RuntimeException();
         }
+        for (int i = -5; i < 5; i++) {
+            int code = toCode(getTOTP(secret, i), 6);
+            System.err.println(toCode(code, 6) + ", " + code);
+        }
     }
 
 
@@ -42,10 +46,37 @@ public class TOTP {
         }
     }
 
-    public static byte[] getTotp(byte[] secret) {
-        return HOTP.HOTP(secret, getBytes(t(unixTime(), T0, TIME_STEP)));
+    public static byte[] getTOTP(byte[] secret, int offset) {
+        return HOTP.getHOTP(secret, getBytes(t(unixTime(), T0, TIME_STEP) + offset));
     }
 
+    /**
+     * Convert TOTP to short code
+     */
+    public static int toCode(byte[] totp, int length) {
+        int offset = totp[totp.length - 1] & 0xf;
+        int binary = ((totp[offset] & 0x7f) << 24)
+                | ((totp[offset + 1] & 0xff) << 16)
+                | ((totp[offset + 2] & 0xff) << 8)
+                | (totp[offset + 3] & 0xff);
+        return binary % (int) Math.pow(10, length);
+    }
+
+    /**
+     * Pads with leading zeros that may be missing
+     * For example: toCode(1234, 6) returns 001234
+     */
+    public static String toCode(int code, int length) {
+        StringBuilder string = new StringBuilder(Integer.toString(code));
+        while (string.length() != length) {
+            string.insert(0, "0");
+        }
+        return string.toString();
+    }
+
+    /**
+     * https://www.twilio.com/docs/verify/quickstarts/totp#create-a-qr-code
+     */
     public static String getUri(byte[] secret) {
         return Otpauth.getUri(Otpauth.Type.TOTP, "Corporation:Johnny%20Is%20Cool", secret, "google.com", 6, Otpauth.Algorithm.SHA1, null, 30);
     }

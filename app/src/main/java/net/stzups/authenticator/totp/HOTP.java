@@ -22,7 +22,7 @@ public class HOTP {
         return mac.doFinal(value);
     }
 
-    public static byte[] HOTP(byte[] secret, byte[] movingFactor) {
+    public static byte[] getHOTP(byte[] secret, byte[] movingFactor) {
         return hmacSha1(secret, movingFactor);
     }
 }
