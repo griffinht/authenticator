@@ -1,14 +1,16 @@
 package net.stzups.authenticator.handlers;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.totp.TOTPGenerator;
+import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
+import net.stzups.netty.http.exception.exceptions.NotFoundException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 
@@ -33,8 +35,8 @@ public class UserHandler extends HttpHandler {
             throw new UnauthorizedException("No permissions");
         }
 
-
-        HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
+//todo what if totp is removed while someone is authenticating with totp?
+        FullHttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK);
         if (request.method().equals(HttpMethod.GET)) {
             if (database.hasTotp(session.sessionInfo.user)) {
                 throw new UnauthorizedException("User already has otp enabled");
@@ -42,12 +44,33 @@ public class UserHandler extends HttpHandler {
 
             byte[] secret = TOTPGenerator.generateSecret();
             database.setTotp(session.sessionInfo.user, secret);
-            ByteBuf byteBuf = Unpooled.wrappedBuffer(TOTPGenerator.getUri(secret).getBytes(StandardCharsets.UTF_8));
-            HttpUtils.send(ctx, request, response, byteBuf);
-            byteBuf.release();
-        } else if (request.method().equals(HttpMethod.DELETE)) {
+            response.content().writeBytes(TOTPGenerator.getUri(secret).getBytes(StandardCharsets.UTF_8));
+
+
+
+            //todo
+            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, response.content().readableBytes());
+            boolean keepAlive = HttpUtils.setKeepAlive(request, response);
+
+            //ctx.write(response);
+            //ChannelFuture flushPromise = ctx.writeAndFlush(content);
+            ChannelFuture flushPromise = ctx.writeAndFlush(response);
+
+            if (!keepAlive) {
+                flushPromise.addListener(ChannelFutureListener.CLOSE);
+            }
+            //HttpUtils.send(ctx, request, response);
+
+
+
+
+            TestLog.getLogger(ctx).info("Created totp for user");
+        } else if (request.method().equals(HttpMethod.DELETE) || request.uri().endsWith("TEST_DELETE")) { //temp workaround
             database.removeTotp(session.sessionInfo.user);
             HttpUtils.send(ctx, request, response);
+            TestLog.getLogger(ctx).info("Removed totp from user");
+        } else {
+            throw new NotFoundException("unknown method");
         }
 
         return true;

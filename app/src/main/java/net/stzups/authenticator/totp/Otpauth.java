@@ -57,7 +57,6 @@ public class Otpauth {
             query.append(param.getKey()).append("=").append(param.getValue());
         }
 
-        System.err.println(base + query);
         return base + query;
     }
 }

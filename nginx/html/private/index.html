@@ -10,5 +10,13 @@
 <form action="/api/user/otp" method="get">
     <button type="submit">Create otp</button>
 </form>
+<script>
+    function deleteOtp() {
+        let request = new XMLHttpRequest()
+        request.open('DELETE', '/api/user/otp/TEST_DELETE')
+        request.send()
+    }
+</script>
+<button onclick="deleteOtp()">Delete OTP</button>
 </body>
 </html>
