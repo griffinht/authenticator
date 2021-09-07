@@ -5,6 +5,7 @@ import io.netty.handler.codec.http.*;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.totp.TOTP;
+import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.BadRequestException;
@@ -18,7 +19,7 @@ public class OtpHandler extends HttpHandler {
 
         private OtpRequest(FullHttpRequest request) throws BadRequestException {
             Form form = new Form(request);
-            String code = form.getText("code");
+            String code = form.getText("otp");
             try {
                 this.code = Integer.parseInt(code);
             } catch (IllegalArgumentException e) {
@@ -46,6 +47,7 @@ public class OtpHandler extends HttpHandler {
         if (!session.sessionInfo.needsOtp()) {
             response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGIN_PAGE);
             HttpUtils.send(ctx, request, response);
+            TestLog.getLogger(ctx).info("Otp not required, redirecting...");
         }
 
         if (!TOTP.verify(database.getTotp(session.sessionInfo.user),
@@ -55,11 +57,13 @@ public class OtpHandler extends HttpHandler {
                 otpRequest.code, 6)) {
             response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.OTP_PAGE);
             HttpUtils.send(ctx, request, response);
+            TestLog.getLogger(ctx).info("Bad otp, redirecting...");
         }
 
         session.sessionInfo.finishOtp();
-        response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGIN_PAGE);
+        response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGGED_IN_PAGE);
         HttpUtils.send(ctx, request, response);
+        TestLog.getLogger(ctx).info("Good otp");
         return true;
     }
 }

@@ -32,7 +32,7 @@ public class LoginHandler extends HttpHandler {
 
     static final String LOGIN_PAGE = "/public/";  // page where login requests come from
     static final String LOGGED_IN_PAGE = "/"; // page where logged in users go
-    static final String OTP_PAGE = "/public/otp"; // page where users who need to do otp go
+    static final String OTP_PAGE = "/public/otp.html"; // page where users who need to do otp go
 
     private final Database database;
 
