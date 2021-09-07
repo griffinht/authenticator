@@ -1,0 +1,65 @@
+package net.stzups.authenticator.handlers;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.*;
+import net.stzups.authenticator.authentication.Database;
+import net.stzups.authenticator.authentication.Session;
+import net.stzups.authenticator.totp.TOTP;
+import net.stzups.netty.http.HttpUtils;
+import net.stzups.netty.http.exception.HttpException;
+import net.stzups.netty.http.exception.exceptions.BadRequestException;
+import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
+import net.stzups.netty.http.handler.HttpHandler;
+import net.stzups.netty.http.objects.Form;
+
+public class OtpHandler extends HttpHandler {
+    private static class OtpRequest {
+        private final int code;
+
+        private OtpRequest(FullHttpRequest request) throws BadRequestException {
+            Form form = new Form(request);
+            String code = form.getText("code");
+            try {
+                this.code = Integer.parseInt(code);
+            } catch (IllegalArgumentException e) {
+                throw new BadRequestException("Exception while parsing " + code + " as integer for code", e);
+            }
+        }
+    }
+    private final Database database;
+
+    public OtpHandler(Database database) {
+        super("/api/otp");
+        this.database = database;
+    }
+
+    @Override
+    public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) throws HttpException {
+        OtpRequest otpRequest = new OtpRequest(request);
+
+        Session session = Session.getSession(ctx, request, database);
+        if (session == null) {
+            throw new UnauthorizedException("Bad session");
+        }
+
+        HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SEE_OTHER);
+        if (!session.sessionInfo.needsOtp()) {
+            response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGIN_PAGE);
+            HttpUtils.send(ctx, request, response);
+        }
+
+        if (!TOTP.verify(database.getTotp(session.sessionInfo.user),
+                30,
+                -1,
+                2,
+                otpRequest.code, 6)) {
+            response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.OTP_PAGE);
+            HttpUtils.send(ctx, request, response);
+        }
+
+        session.sessionInfo.finishOtp();
+        response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGIN_PAGE);
+        HttpUtils.send(ctx, request, response);
+        return true;
+    }
+}

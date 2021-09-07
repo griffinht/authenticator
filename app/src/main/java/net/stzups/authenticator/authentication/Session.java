@@ -31,7 +31,9 @@ public class Session {
     private final boolean persistent;
     private final byte[] hash;
 
-    public Session(HttpResponse response, boolean persistent) {
+    public final SessionInfo sessionInfo;
+
+    public Session(HttpResponse response, boolean persistent, SessionInfo sessionInfo) {
         id = secureRandom.nextLong();
         created = Date.from(Instant.now());
         this.persistent = persistent;
@@ -43,6 +45,8 @@ public class Session {
         response.headers().add(HttpHeaderNames.SET_COOKIE, ServerCookieEncoder.STRICT.encode(cookie));
 
         hash = hash(token);
+
+        this.sessionInfo = sessionInfo;
     }
 
     public static boolean verify(Session session, SessionCookie sessionCookie) {

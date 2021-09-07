@@ -9,6 +9,7 @@ import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
+import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 import net.stzups.netty.http.handler.HttpHandler;
 
 public class AuthenticationHandler extends HttpHandler {
@@ -23,10 +24,16 @@ public class AuthenticationHandler extends HttpHandler {
     public boolean handle(ChannelHandlerContext ctx, FullHttpRequest request) throws HttpException {
         //todo verify that this is actually coming from the proxy
         //System.err.println(request.headers());
-        if (Session.getSession(ctx, request, database) != null) {
-            HttpUtils.send(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
+        Session session = Session.getSession(ctx, request, database);
+        if (session == null) {
+            throw new UnauthorizedException("Bad session");
         }
 
+        if (!session.sessionInfo.canViewPrivate()) {
+            throw new UnauthorizedException("No permission to view private");
+        }
+
+        HttpUtils.send(ctx, request, new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK));
         return true;
     }
 }

@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class Login {
     private final byte[] hash;
     private final byte[] salt;
-    private final long user;
+    public final long user;
 
     public Login(byte[] password, long user) {
         byte[][] bytes = PasswordUtil.hash(password);

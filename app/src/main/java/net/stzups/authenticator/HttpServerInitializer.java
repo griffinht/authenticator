@@ -7,6 +7,7 @@ import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.handlers.AuthenticationHandler;
 import net.stzups.authenticator.handlers.LoginHandler;
 import net.stzups.authenticator.handlers.LogoutHandler;
+import net.stzups.authenticator.handlers.OtpHandler;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.DefaultHttpServerHandler;
 import net.stzups.netty.http.handler.HttpHandler;
@@ -21,7 +22,8 @@ public class HttpServerInitializer extends net.stzups.netty.http.HttpServerIniti
         this.httpHandlers = new HttpHandler[]{
                 new LoginHandler(database),
                 new AuthenticationHandler(database),
-                new LogoutHandler(database)
+                new LogoutHandler(database),
+                new OtpHandler(database)
         };
     }
 

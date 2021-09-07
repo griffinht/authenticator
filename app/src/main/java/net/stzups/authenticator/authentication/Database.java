@@ -37,4 +37,12 @@ public class Database {
     public Login getLogin(String username) {
         return logins.get(username);
     }
+
+    public boolean hasTotp(long user) {
+        return totp.containsKey(user);
+    }
+
+    public byte[] getTotp(long user) {
+        return totp.get(user);
+    }
 }

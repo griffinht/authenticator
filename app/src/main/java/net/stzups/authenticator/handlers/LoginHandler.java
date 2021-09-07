@@ -5,6 +5,7 @@ import io.netty.handler.codec.http.*;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Login;
 import net.stzups.authenticator.authentication.Session;
+import net.stzups.authenticator.authentication.SessionInfo;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
@@ -31,6 +32,7 @@ public class LoginHandler extends HttpHandler {
 
     static final String LOGIN_PAGE = "/public/";  // page where login requests come from
     static final String LOGGED_IN_PAGE = "/"; // page where logged in users go
+    static final String OTP_PAGE = "/public/otp"; // page where users who need to do otp go
 
     private final Database database;
 
@@ -45,10 +47,10 @@ public class LoginHandler extends HttpHandler {
             throw new MethodNotAllowedException(request.method(), HttpMethod.POST);
         }
 
+        LoginRequest loginRequest = new LoginRequest(request); // always verify first and fail first before any time sensitive database stuff
+
 
         HttpResponse response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.SEE_OTHER);
-
-        LoginRequest loginRequest = new LoginRequest(request);
         Login login = database.getLogin(loginRequest.username);
         if (!Login.verify(login, loginRequest.password)) {
             TestLog.getLogger(ctx).info("Bad login");
@@ -61,8 +63,8 @@ public class LoginHandler extends HttpHandler {
 
         //todo check for 2fa
 
-        Session session = new Session(response, loginRequest.remember);
-        response.headers().set(HttpHeaderNames.LOCATION, LOGGED_IN_PAGE);
+        Session session = new Session(response, loginRequest.remember, new SessionInfo(login.user, database.hasTotp(login.user)));
+        response.headers().set(HttpHeaderNames.LOCATION, session.sessionInfo.needsOtp() ? OTP_PAGE : LOGGED_IN_PAGE);
         HttpUtils.send(ctx, request, response);
 
         database.addSession(session);
