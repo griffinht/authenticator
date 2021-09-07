@@ -44,7 +44,7 @@ public class UserHandler extends HttpHandler {
 
             byte[] secret = TOTPGenerator.generateSecret();
             database.setTotp(session.sessionInfo.user, secret);
-            response.content().writeBytes(TOTPGenerator.getUri(secret).getBytes(StandardCharsets.UTF_8));
+            response.content().writeBytes(TOTPGenerator.getUri(secret, "server:johnny", "server.com").getBytes(StandardCharsets.UTF_8));
 
 
 

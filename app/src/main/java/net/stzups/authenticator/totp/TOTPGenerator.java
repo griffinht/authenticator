@@ -22,7 +22,7 @@ public class TOTPGenerator {
         return TOTP.verify(secret, TIME_STEP, OFFSET_START, OFFSET_AMOUNT, code, CODE_LENGTH);
     }
 
-    public static String getUri(byte[] secret) {
-        return Otpauth.getUri(Otpauth.Type.TOTP, "Corporation:Johnny%20Is%20Cool", secret, "google.com", CODE_LENGTH, Otpauth.Algorithm.SHA1, null, TIME_STEP);
+    public static String getUri(byte[] secret, String label, String issuer) {
+        return Otpauth.getUri(Otpauth.Type.TOTP, label, secret, issuer, CODE_LENGTH, Otpauth.Algorithm.SHA1, null, TIME_STEP);
     }
 }
