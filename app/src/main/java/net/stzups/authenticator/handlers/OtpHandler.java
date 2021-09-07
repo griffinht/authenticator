@@ -48,6 +48,8 @@ public class OtpHandler extends HttpHandler {
             response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.LOGIN_PAGE);
             HttpUtils.send(ctx, request, response);
             TestLog.getLogger(ctx).info("Otp not required, redirecting...");
+            return true;
+
         }
 
         if (!TOTP.verify(database.getTotp(session.sessionInfo.user),
@@ -58,6 +60,7 @@ public class OtpHandler extends HttpHandler {
             response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.OTP_PAGE);
             HttpUtils.send(ctx, request, response);
             TestLog.getLogger(ctx).info("Bad otp, redirecting...");
+            return true;
         }
 
         session.sessionInfo.finishOtp();
