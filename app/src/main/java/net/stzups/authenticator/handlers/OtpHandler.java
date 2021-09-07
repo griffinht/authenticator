@@ -4,7 +4,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
-import net.stzups.authenticator.totp.TOTP;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
@@ -52,11 +51,7 @@ public class OtpHandler extends HttpHandler {
 
         }
 
-        if (!TOTP.verify(database.getTotp(session.sessionInfo.user),
-                30,
-                -1,
-                2,
-                otpRequest.code, 6)) {
+        if (!TOTPGenerator.verify(database.getTotp(session.sessionInfo.user), otpRequest.code)) {
             response.headers().set(HttpHeaderNames.LOCATION, LoginHandler.OTP_PAGE);
             HttpUtils.send(ctx, request, response);
             TestLog.getLogger(ctx).info("Bad otp, redirecting...");

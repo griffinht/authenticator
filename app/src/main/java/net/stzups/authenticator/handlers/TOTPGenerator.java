@@ -1,4 +1,7 @@
-package net.stzups.authenticator.totp;
+package net.stzups.authenticator.handlers;
+
+import net.stzups.authenticator.totp.Otpauth;
+import net.stzups.authenticator.totp.TOTP;
 
 import java.security.SecureRandom;
 
