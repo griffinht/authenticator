@@ -1,8 +1,10 @@
 package net.stzups.authenticator.authentication;
 
-public class SessionInfo {
+import java.io.Serializable;
+
+public class SessionInfo implements Serializable {
     public final long user;
-    private boolean needsOtp = false;
+    private boolean needsOtp;
 
     public SessionInfo(long user, boolean needsOtp) {
         this.user = user;

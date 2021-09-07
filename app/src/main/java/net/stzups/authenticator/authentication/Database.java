@@ -2,11 +2,12 @@ package net.stzups.authenticator.authentication;
 
 import net.stzups.authenticator.User;
 
+import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Database {
+public class Database implements Serializable {
     private Map<Long, Session> sessions = new HashMap<>(); // session id to session
     private Map<String, Login> logins = new HashMap<>(); // user id to login
     private Map<Long, User> users = new HashMap<>(); // user id to user

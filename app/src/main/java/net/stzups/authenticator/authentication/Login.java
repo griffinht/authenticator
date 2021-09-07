@@ -1,8 +1,9 @@
 package net.stzups.authenticator.authentication;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class Login {
+public class Login implements Serializable {
     private final byte[] hash;
     private final byte[] salt;
     public final long user;

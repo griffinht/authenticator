@@ -1,8 +1,9 @@
 package net.stzups.authenticator;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 
-public class User {
+public class User implements Serializable {
     private static final SecureRandom secureRandom = new SecureRandom();
 
     public final long id;
