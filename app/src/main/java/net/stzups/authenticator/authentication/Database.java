@@ -39,11 +39,19 @@ public class Database implements Serializable {
         return logins.get(username);
     }
 
+    public void setTotp(long user, byte[] secret) {
+        totp.put(user, secret);
+    }
+
     public boolean hasTotp(long user) {
         return totp.containsKey(user);
     }
 
     public byte[] getTotp(long user) {
         return totp.get(user);
+    }
+
+    public void removeTotp(long user) {
+        totp.remove(user);
     }
 }
