@@ -3,7 +3,7 @@ package net.stzups.authenticator.totp;
 import java.security.SecureRandom;
 
 public class TOTPGenerator {
-    private static final int SECRET_LENGTH = 32;
+    public static final int SECRET_LENGTH = 32;
     private static final int TIME_STEP = 30;
     private static final int OFFSET_START = -1;
     private static final int OFFSET_AMOUNT = 2;

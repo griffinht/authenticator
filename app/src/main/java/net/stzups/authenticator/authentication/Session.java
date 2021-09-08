@@ -1,5 +1,6 @@
 package net.stzups.authenticator.authentication;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
 import io.netty.handler.codec.http.cookie.Cookie;
@@ -10,7 +11,6 @@ import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 
-import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -19,7 +19,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Session implements Serializable {
+public class Session {
     private static final Duration EXPIRATION = Duration.ofDays(1); // expiration for session cookies, which shouldn't really last as long as persistent ones
     private static final Duration PERSISTENT_EXPIRATION = Duration.ofDays(90);
 
@@ -33,6 +33,22 @@ public class Session implements Serializable {
     private final byte[] hash;
 
     public final SessionInfo sessionInfo;
+
+    public Session(ByteBuf byteBuf) {
+        this.id = byteBuf.readLong();
+        this.created = Date.from(Instant.ofEpochMilli(byteBuf.readLong()));
+        this.persistent = byteBuf.readBoolean();
+        hash = new byte[256 / 8];
+        byteBuf.readBytes(hash);
+        this.sessionInfo = new SessionInfo(byteBuf);
+    }
+
+    public void serialize(ByteBuf byteBuf) {
+        byteBuf.writeLong(id);
+        byteBuf.writeLong(created.toInstant().toEpochMilli());
+        byteBuf.writeBoolean(persistent);
+        byteBuf.writeBytes(hash);
+    }
 
     public Session(HttpResponse response, boolean persistent, SessionInfo sessionInfo) {
         id = secureRandom.nextLong();

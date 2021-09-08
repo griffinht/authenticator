@@ -1,12 +1,27 @@
 package net.stzups.authenticator.authentication;
 
-import java.io.Serializable;
+import io.netty.buffer.ByteBuf;
+
 import java.util.Arrays;
 
-public class Login implements Serializable {
+public class Login {
     private final byte[] hash;
     private final byte[] salt;
     public final long user;
+
+    public Login(ByteBuf byteBuf) {
+        hash = new byte[PasswordUtil.HASH_LENGTH];
+        byteBuf.readBytes(hash);
+        salt = new byte[PasswordUtil.SALT_LENGTH];
+        byteBuf.readBytes(salt);
+        user = byteBuf.readLong();
+    }
+
+    public void serialize(ByteBuf byteBuf) {
+        byteBuf.writeBytes(hash);
+        byteBuf.writeBytes(salt);
+        byteBuf.writeLong(user);
+    }
 
     public Login(byte[] password, long user) {
         byte[][] bytes = PasswordUtil.hash(password);
