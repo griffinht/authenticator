@@ -7,7 +7,6 @@ import net.stzups.netty.util.Deserializer;
 import net.stzups.netty.util.NettyUtils;
 import net.stzups.netty.util.Serializer;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,9 +35,6 @@ public class Database {
         logins = new HashMap<>();
         users = new HashMap<>();
         totp = new HashMap<>();
-        User user = new User("user");
-        users.put(user.id, user);
-        logins.put("admin", new Login("password".getBytes(StandardCharsets.UTF_8), user.id));
     }
 
     public static byte[] readBytes(ByteBuf byteBuf, int length) {
@@ -79,10 +75,16 @@ public class Database {
        sessions.remove(session.id);
     }
 
+    public void addUser(User user) {
+        users.put(user.id, user);
+    }
     public User getUser(long id) {
         return users.get(id);
     }
 
+    public void addLogin(String username, Login login) {
+        logins.put(username, login);
+    }
     public Login getLogin(String username) {
         return logins.get(username);
     }
@@ -91,6 +93,9 @@ public class Database {
         totp.put(user, secret);
     }
 
+    public void addTotp(long user, byte[] secret) {
+        totp.put(user, secret);
+    }
     public boolean hasTotp(long user) {
         return totp.containsKey(user);
     }

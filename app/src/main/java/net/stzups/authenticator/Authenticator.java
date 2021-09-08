@@ -4,25 +4,49 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import net.stzups.authenticator.authentication.Database;
+import net.stzups.authenticator.authentication.Login;
+import net.stzups.authenticator.totp.TOTPGenerator;
 import net.stzups.netty.Server;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
+import java.util.UUID;
 
 public class Authenticator {
     private static final File file = new File("data.txt");
 
+    private static Random random = new Random();
+    public static String randomString() {
+        return new UUID(random.nextLong(), random.nextLong()).toString();
+    }
     public static void main(String[] args) throws Exception {
         System.err.println("Starting server...");
         Database database;
         if (!file.exists()) {
             database = new Database();
+            int length = 100000;
+            long last = System.currentTimeMillis();
+            for (int i = 0; i < length; i++) {
+                if (i % 100 == 0 && System.currentTimeMillis() - last > 1000) {
+                    last = System.currentTimeMillis();
+                    System.err.println("Generating... (" + i + "/" + length + ")");
+                }
+                User user = new User(randomString());
+                database.addUser(user);
+                database.addLogin(randomString(), new Login(randomString().getBytes(StandardCharsets.UTF_8), user.id));
+                database.addTotp(user.id, TOTPGenerator.generateSecret());
+            }
         } else {
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                database = new Database(Unpooled.wrappedBuffer(fileInputStream.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length())));
+                ByteBuf byteBuf = Unpooled.buffer();
+                byteBuf.writeBytes(fileInputStream, (int) file.length());
+                long start = System.nanoTime();
+                database = new Database(byteBuf);
+                System.err.println("Serialized in " + (System.nanoTime() - start) / 100000 + "ms");
             }
         }
 
@@ -39,7 +63,9 @@ public class Authenticator {
                 throw new IOException("Could not create at " + file.getAbsolutePath());
             }
             ByteBuf byteBuf = Unpooled.buffer();
+            long start = System.nanoTime();
             database.serialize(byteBuf);
+            System.err.println("Serialized in " + (System.nanoTime() - start) / 100000 + "ms");
             try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
                 byteBuf.readBytes(fileOutputStream, byteBuf.readableBytes());
             }
