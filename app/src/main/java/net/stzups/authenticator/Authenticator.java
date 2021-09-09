@@ -16,7 +16,6 @@ import java.util.Random;
 import java.util.UUID;
 
 public class Authenticator {
-    static boolean fast = false;
     private static final File file = new File("data.txt");
 
     private static Random random = new Random();
@@ -24,94 +23,61 @@ public class Authenticator {
         return new UUID(random.nextLong(), random.nextLong()).toString();
     }
     public static void main(String[] args) throws Exception {
-        try {
-            System.err.println("Starting server...");
-            Database database;
-            if (!file.exists()) {
-                database = new Database();
-                int length = 500000;
-                long last = System.currentTimeMillis();
-                for (int i = 0; i < length; i++) {
-                    if (i % 100 == 0 && System.currentTimeMillis() - last > 1000) {
-                        last = System.currentTimeMillis();
-                        System.err.println("Generating... (" + i + "/" + length + ")");
-                    }
-                    User user = new User(randomString());
-                    database.addUser(user);
-                    database.addLogin(randomString(), new Login(randomString().getBytes(StandardCharsets.UTF_8), user.id));
-                    database.addTotp(user.id, TOTPGenerator.generateSecret());
+        System.err.println("Starting server...");
+        Database database;
+        if (!file.exists()) {
+            database = new Database();
+            int length = 500000;
+            long last = System.currentTimeMillis();
+            for (int i = 0; i < length; i++) {
+                if (i % 100 == 0 && System.currentTimeMillis() - last > 1000) {
+                    last = System.currentTimeMillis();
+                    System.err.println("Generating... (" + i + "/" + length + ")");
                 }
-            } else {
-                if (!fast) {
-                    try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                        ByteBuf byteBuf = Unpooled.buffer();
-                        byteBuf.writeBytes(fileInputStream, (int) file.length());
-                        System.err.println("Deserializing...");
-                        long start = System.nanoTime();
-                        database = new Database(byteBuf);
-                        System.err.println("Deserialized in " + (System.nanoTime() - start) / 1000000 + "ms");
-                    }
-                } else {
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    try (FileInputStream fileInputStream = new FileInputStream(file)) {
-                        byteBuf.writeBytes(fileInputStream, (int) file.length());
-                    }
-                    {
-                        ObjectInputStream objectInputStream = new ObjectInputStream(new ByteBufInputStream(byteBuf));
-                        System.err.println("Deserializing...");
-                        long start = System.nanoTime();
-                        database = (Database) objectInputStream.readObject();
-                        System.err.println("Deserialized in " + (System.nanoTime() - start) / 1000000 + "ms");
-                    }
-                }
+                User user = new User(randomString());
+                database.addUser(user);
+                database.addLogin(randomString(), new Login(randomString().getBytes(StandardCharsets.UTF_8), user.id));
+                database.addTotp(user.id, TOTPGenerator.generateSecret());
             }
-
-            try (Server server = new Server(8080)) {
-                Runtime.getRuntime().addShutdownHook(new Thread(server::close));
-
-                ChannelFuture closeFuture = server.start(new HttpServerInitializer(new Config(), database));
-
-                System.err.println("Started server");
-                closeFuture.sync();
-                System.err.println("Stopping server...");
-
-                if (!file.exists() && !file.createNewFile()) {
-                    throw new IOException("Could not create at " + file.getAbsolutePath());
-                }
-                if (!fast) {
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    {
-                        ObjectOutputStream objectOutputStream = new ObjectOutputStream(new ByteBufOutputStream(byteBuf));
-                        System.err.println("Serializing...");
-                        long start = System.nanoTime();
-                        objectOutputStream.writeObject(database);
-                        System.err.println("Serialized in " + (System.nanoTime() - start) / 1000000 + "ms");
-                    }
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-                        byteBuf.readBytes(fileOutputStream, byteBuf.readableBytes());
-                    }
-                } else {
-                    ByteBuf byteBuf = Unpooled.buffer();
-                    System.err.println("Serializing...");
-                    long start = System.nanoTime();
-                    try {
-                        database.serialize(byteBuf);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    System.err.println("Serialized in " + (System.nanoTime() - start) / 1000000 + "ms");
-                    try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-                        byteBuf.readBytes(fileOutputStream, byteBuf.readableBytes());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                System.err.println("Server stopped");
+        } else {
+            try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                ByteBuf byteBuf = Unpooled.buffer();
+                byteBuf.writeBytes(fileInputStream, (int) file.length());
+                System.err.println("Deserializing...");
+                long start = System.nanoTime();
+                database = new Database(byteBuf);
+                System.err.println("Deserialized in " + (System.nanoTime() - start) / 1000000 + "ms");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
+        try (Server server = new Server(8080)) {
+            Runtime.getRuntime().addShutdownHook(new Thread(server::close));
+
+            ChannelFuture closeFuture = server.start(new HttpServerInitializer(new Config(), database));
+
+            System.err.println("Started server");
+            closeFuture.sync();
+            System.err.println("Stopping server...");
+
+            if (!file.exists() && !file.createNewFile()) {
+                throw new IOException("Could not create at " + file.getAbsolutePath());
+            }
+            ByteBuf byteBuf = Unpooled.buffer();
+            System.err.println("Serializing...");
+            long start = System.nanoTime();
+            try {
+                database.serialize(byteBuf);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            System.err.println("Serialized in " + (System.nanoTime() - start) / 1000000 + "ms");
+            try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+                byteBuf.readBytes(fileOutputStream, byteBuf.readableBytes());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            System.err.println("Server stopped");
+        }
     }
 }
