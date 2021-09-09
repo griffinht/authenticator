@@ -11,6 +11,7 @@ import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
 import net.stzups.netty.http.exception.exceptions.UnauthorizedException;
 
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -19,7 +20,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Date;
 
-public class Session {
+public class Session implements Serializable {
     private static final Duration EXPIRATION = Duration.ofDays(1); // expiration for session cookies, which shouldn't really last as long as persistent ones
     private static final Duration PERSISTENT_EXPIRATION = Duration.ofDays(90);
 

@@ -2,7 +2,9 @@ package net.stzups.authenticator.authentication;
 
 import io.netty.buffer.ByteBuf;
 
-public class SessionInfo {
+import java.io.Serializable;
+
+public class SessionInfo implements Serializable {
     public final long user;
     private boolean needsOtp;
 
