@@ -5,7 +5,7 @@ import io.netty.buffer.ByteBuf;
 import java.io.Serializable;
 import java.util.Arrays;
 
-public class Login implements Serializable {
+public class Login {
     private final byte[] hash;
     private final byte[] salt;
     public final long user;

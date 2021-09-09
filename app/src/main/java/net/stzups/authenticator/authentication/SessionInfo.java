@@ -4,7 +4,7 @@ import io.netty.buffer.ByteBuf;
 
 import java.io.Serializable;
 
-public class SessionInfo implements Serializable {
+public class SessionInfo {
     public final long user;
     private boolean needsOtp;
 

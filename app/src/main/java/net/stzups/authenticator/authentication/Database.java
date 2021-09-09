@@ -11,7 +11,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Database implements Serializable {
+public class Database {
     private final Map<Long, Session> sessions; // session id to session
     private final Map<String, Login> logins; // user id to login
     private final Map<Long, User> users; // user id to user
