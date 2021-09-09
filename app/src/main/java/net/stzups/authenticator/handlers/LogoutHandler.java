@@ -2,9 +2,9 @@ package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
-import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.authentication.SessionCookie;
+import net.stzups.authenticator.database.Database;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.handler.HttpHandler;

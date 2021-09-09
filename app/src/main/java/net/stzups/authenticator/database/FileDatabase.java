@@ -1,27 +1,60 @@
-package net.stzups.authenticator.authentication;
+package net.stzups.authenticator.database;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.stzups.authenticator.User;
+import net.stzups.authenticator.authentication.Login;
+import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.totp.TOTPGenerator;
 import net.stzups.netty.util.Deserializer;
 import net.stzups.netty.util.NettyUtils;
 import net.stzups.netty.util.Serializer;
 
-import java.io.Serializable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
+import java.util.UUID;
 
-public class Database {
+public class FileDatabase implements Database {
+    private static final File file = new File("data.txt");
+
     private final Map<Long, Session> sessions; // session id to session
     private final Map<String, Login> logins; // user id to login
     private final Map<Long, User> users; // user id to user
     private final Map<Long, byte[]> totp; // user id to totp
 
-    public Database(ByteBuf byteBuf) {
+    public FileDatabase(ByteBuf byteBuf) {
         sessions = readHashMap32(byteBuf, ByteBuf::readLong, Session::new);
         logins = readHashMap32(byteBuf, NettyUtils::readString8, Login::new);
         users = readHashMap32(byteBuf, ByteBuf::readLong, User::new);
         totp = readHashMap32(byteBuf, ByteBuf::readLong, b -> readBytes(b, TOTPGenerator.SECRET_LENGTH));
+    }
+
+    @Override
+    public void close() throws Exception {
+
+        if (!file.exists() && !file.createNewFile()) {
+            throw new IOException("Could not create at " + file.getAbsolutePath());
+        }
+        ByteBuf byteBuf = Unpooled.buffer();
+        System.err.println("Serializing...");
+        long start = System.nanoTime();
+        try {
+            serialize(byteBuf);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.err.println("Serialized in " + (System.nanoTime() - start) / 1000000 + "ms");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+            byteBuf.readBytes(fileOutputStream, byteBuf.readableBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void serialize(ByteBuf byteBuf) {
@@ -31,7 +64,19 @@ public class Database {
         writeHashMap32(byteBuf, totp, ByteBuf::writeLong, ByteBuf::writeBytes);
     }
 
-    public Database() {
+    public FileDatabase() {
+        if (!file.exists()) {
+            generateGarbage(this);
+        } else {
+            try (FileInputStream fileInputStream = new FileInputStream(file)) {
+                ByteBuf byteBuf = Unpooled.buffer();
+                byteBuf.writeBytes(fileInputStream, (int) file.length());
+                System.err.println("Deserializing...");
+                long start = System.nanoTime();
+                database = new FileDatabase(byteBuf);
+                System.err.println("Deserialized in " + (System.nanoTime() - start) / 1000000 + "ms");
+            }
+        }
         sessions = new HashMap<>();
         logins = new HashMap<>();
         users = new HashMap<>();
@@ -75,17 +120,17 @@ public class Database {
     public void removeSession(Session session) {
        sessions.remove(session.id);
     }
-
     public void addUser(User user) {
         users.put(user.id, user);
     }
+
     public User getUser(long id) {
         return users.get(id);
     }
-
     public void addLogin(String username, Login login) {
         logins.put(username, login);
     }
+
     public Login getLogin(String username) {
         return logins.get(username);
     }
@@ -93,10 +138,10 @@ public class Database {
     public void setTotp(long user, byte[] secret) {
         totp.put(user, secret);
     }
-
     public void addTotp(long user, byte[] secret) {
         totp.put(user, secret);
     }
+
     public boolean hasTotp(long user) {
         return totp.containsKey(user);
     }
@@ -107,5 +152,27 @@ public class Database {
 
     public void removeTotp(long user) {
         totp.remove(user);
+    }
+
+
+
+
+    private static Random random = new Random();
+    public static String randomString() {
+        return new UUID(random.nextLong(), random.nextLong()).toString();
+    }
+    private static void generateGarbage(FileDatabase database) {
+        int length = 500000;
+        long last = System.currentTimeMillis();
+        for (int i = 0; i < length; i++) {
+            if (i % 100 == 0 && System.currentTimeMillis() - last > 1000) {
+                last = System.currentTimeMillis();
+                System.err.println("Generating... (" + i + "/" + length + ")");
+            }
+            User user = new User(randomString());
+            database.addUser(user);
+            database.addLogin(randomString(), new Login(randomString().getBytes(StandardCharsets.UTF_8), user.id));
+            database.addTotp(user.id, TOTPGenerator.generateSecret());
+        }
     }
 }

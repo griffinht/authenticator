@@ -3,7 +3,7 @@ package net.stzups.authenticator;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.codec.http.HttpContentCompressor;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import net.stzups.authenticator.authentication.Database;
+import net.stzups.authenticator.database.Database;
 import net.stzups.authenticator.handlers.*;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.DefaultHttpServerHandler;

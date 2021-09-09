@@ -2,8 +2,8 @@ package net.stzups.authenticator.handlers;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.*;
-import net.stzups.authenticator.authentication.Database;
 import net.stzups.authenticator.authentication.Session;
+import net.stzups.authenticator.database.Database;
 import net.stzups.authenticator.totp.TOTPGenerator;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
