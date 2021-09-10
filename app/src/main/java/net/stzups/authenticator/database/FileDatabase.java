@@ -64,19 +64,25 @@ public class FileDatabase implements Database {
         writeHashMap32(byteBuf, totp, ByteBuf::writeLong, ByteBuf::writeBytes);
     }
 
-    public FileDatabase() {
+    public static FileDatabase getFileDatabase() throws Exception {
         if (!file.exists()) {
-            generateGarbage(this);
+            FileDatabase database = new FileDatabase();
+            generateGarbage(database);
+            return database;
         } else {
             try (FileInputStream fileInputStream = new FileInputStream(file)) {
                 ByteBuf byteBuf = Unpooled.buffer();
                 byteBuf.writeBytes(fileInputStream, (int) file.length());
                 System.err.println("Deserializing...");
                 long start = System.nanoTime();
-                database = new FileDatabase(byteBuf);
+                FileDatabase database =  new FileDatabase(byteBuf);
                 System.err.println("Deserialized in " + (System.nanoTime() - start) / 1000000 + "ms");
+                return database;
             }
         }
+    }
+
+    public FileDatabase() {
         sessions = new HashMap<>();
         logins = new HashMap<>();
         users = new HashMap<>();

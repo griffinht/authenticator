@@ -2,7 +2,6 @@ package net.stzups.authenticator.authentication;
 
 import io.netty.buffer.ByteBuf;
 
-import java.io.Serializable;
 import java.util.Arrays;
 
 public class Login {

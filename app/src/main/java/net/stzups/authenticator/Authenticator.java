@@ -9,9 +9,9 @@ public class Authenticator {
 
     public static void main(String[] args) throws Exception {
         System.err.println("Starting server...");
-        Database database = new FileDatabase();
 
-        try (Server server = new Server(8080)) {
+        try (Server server = new Server(8080);
+             Database database = new FileDatabase()) {
             Runtime.getRuntime().addShutdownHook(new Thread(server::close));
 
             ChannelFuture closeFuture = server.start(new HttpServerInitializer(new Config(), database));
