@@ -11,7 +11,7 @@ public class Authenticator {
         System.err.println("Starting server...");
 
         try (Server server = new Server(8080);
-             Database database = new FileDatabase()) {
+             Database database = FileDatabase.getFileDatabase()) {
             Runtime.getRuntime().addShutdownHook(new Thread(server::close));
 
             ChannelFuture closeFuture = server.start(new HttpServerInitializer(new Config(), database));

@@ -47,7 +47,7 @@ public class FileDatabase implements Database {
         try {
             serialize(byteBuf);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new Exception("Exception while serializing " + this, e);
         }
         System.err.println("Serialized in " + (System.nanoTime() - start) / 1000000 + "ms");
         try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
