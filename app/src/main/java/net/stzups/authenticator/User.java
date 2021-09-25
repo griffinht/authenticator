@@ -14,12 +14,12 @@ public class User implements Serializable {
 
     public User(ByteBuf byteBuf) {
         id = byteBuf.readLong();
-        name = NettyUtils.readString8(byteBuf);
+        name = NettyUtils.readString(byteBuf);
     }
 
     public void serialize(ByteBuf byteBuf) {
         byteBuf.writeLong(id);
-        NettyUtils.writeString8(byteBuf, name);
+        NettyUtils.writeString(byteBuf, name);
     }
 
     public User(String name) {
