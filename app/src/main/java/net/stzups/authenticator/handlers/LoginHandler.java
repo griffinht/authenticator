@@ -5,7 +5,7 @@ import io.netty.handler.codec.http.*;
 import net.stzups.authenticator.authentication.Login;
 import net.stzups.authenticator.authentication.Session;
 import net.stzups.authenticator.authentication.SessionInfo;
-import net.stzups.authenticator.database.Database;
+import net.stzups.authenticator.data.Database;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;

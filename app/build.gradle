@@ -9,6 +9,7 @@ dependencies {
     implementation 'com.github.stzups:netty-http:1.1.3'
     implementation 'org.bouncycastle:bcpkix-jdk15on:1.69'
     implementation 'com.github.stzups:netty-util:1.0.2'
+    implementation 'com.github.stzups:config:master-SNAPSHOT'
 }
 
 application {

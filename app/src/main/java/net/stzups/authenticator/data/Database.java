@@ -1,4 +1,4 @@
-package net.stzups.authenticator.database;
+package net.stzups.authenticator.data;
 
 import net.stzups.authenticator.User;
 import net.stzups.authenticator.authentication.Login;

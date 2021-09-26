@@ -1,6 +1,7 @@
 package net.stzups.authenticator;
 
 import io.netty.buffer.ByteBuf;
+import net.stzups.netty.DebugString;
 import net.stzups.netty.util.NettyUtils;
 
 import java.io.Serializable;
@@ -25,5 +26,13 @@ public class User implements Serializable {
     public User(String name) {
         this.id = secureRandom.nextLong();
         this.name = name;
+    }
+
+    @Override
+    public String toString() {
+        return DebugString.get(User.class)
+                .add("id", id)
+                .add("name", name)
+                .toString();
     }
 }
