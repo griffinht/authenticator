@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.cookie.Cookie;
 import io.netty.handler.codec.http.cookie.ServerCookieEncoder;
 import net.stzups.authenticator.DeserializationException;
 import net.stzups.authenticator.data.Database;
+import net.stzups.netty.DebugString;
 import net.stzups.netty.TestLog;
 import net.stzups.netty.http.HttpUtils;
 import net.stzups.netty.http.exception.HttpException;
@@ -114,5 +115,14 @@ public class Session {
         TestLog.getLogger(ctx).info("Good session");
 
         return session;
+    }
+
+    @Override
+    public String toString() {
+        return DebugString.get(Session.class)
+                .add("id", id)
+                .add("created", created)
+                .add("persistent", persistent)
+                .toString();
     }
 }
